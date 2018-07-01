@@ -1,0 +1,22 @@
+image: microsoft/dotnet:latest
+
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  project: "Bubbio"
+
+before_script:
+  - "dotnet restore $project"
+
+build:
+  stage: build
+  script:
+    - "sh scripts/build.sh"
+
+test:
+  stage: test
+  script:
+    - "sh scripts/test.sh"
