@@ -7,9 +7,7 @@ namespace Bubbio.Core.Contracts
         Guid Id { get; set; }
         Guid ParentId { get; set; }
 
-        string FirstName { get; set; }
-        string MiddleName { get; set; }
-        string LastName { get; set; }
+        IName Name { get; set; }
         DateTimeOffset DateOfBirth { get; set; }
 
         long InitialHeight { get; set; }
