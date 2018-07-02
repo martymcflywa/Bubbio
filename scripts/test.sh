@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
+source ./scripts/env.sh
 
-for project in $CI_PROJECT_NAME/test/**; do
-    dotnet test $project;
+TESTS_CORE=*Bubbio.Tests.Core
+
+for p in $PROJECT/test/**; do
+    if [[ "$p" != $TESTS_CORE ]]; then
+        echo "Executing test run for $p";
+        dotnet test $p;
+    fi
 done

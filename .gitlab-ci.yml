@@ -14,9 +14,9 @@ before_script:
 build:
   stage: build
   script:
-    - "sh scripts/build.sh"
+    - "bash scripts/build.sh"
 
 test:
   stage: test
   script:
-    - "sh scripts/test.sh"
+    - "bash scripts/test.sh"
