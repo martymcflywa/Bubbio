@@ -1,4 +1,5 @@
 #!/bin/bash
 set -e
+source ./scripts/env.sh
 
-dotnet build --no-incremental --configuration Release $CI_PROJECT_NAME
+dotnet build --no-incremental --configuration Release $PROJECT

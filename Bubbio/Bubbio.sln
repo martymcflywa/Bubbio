@@ -5,6 +5,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Core", "src\Bubbio.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Core.Tests", "test\Bubbio.Core.Tests\Bubbio.Core.Tests.csproj", "{2760DB29-8D63-4BF5-AEBD-88BED42266F3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Domain", "src\Bubbio.Domain\Bubbio.Domain.csproj", "{7B851D25-77C5-4B6C-A34D-7C2DF78A1209}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Domain.Tests", "test\Bubbio.Domain.Tests\Bubbio.Domain.Tests.csproj", "{7D587548-30FC-46B5-A066-25045EF4B0CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Tests.Core", "test\Bubbio.Tests.Core\Bubbio.Tests.Core.csproj", "{001B3616-EEEF-4519-B85F-AF6F19DF7F71}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,5 +25,17 @@ Global
 		{2760DB29-8D63-4BF5-AEBD-88BED42266F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2760DB29-8D63-4BF5-AEBD-88BED42266F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2760DB29-8D63-4BF5-AEBD-88BED42266F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B851D25-77C5-4B6C-A34D-7C2DF78A1209}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B851D25-77C5-4B6C-A34D-7C2DF78A1209}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B851D25-77C5-4B6C-A34D-7C2DF78A1209}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B851D25-77C5-4B6C-A34D-7C2DF78A1209}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D587548-30FC-46B5-A066-25045EF4B0CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D587548-30FC-46B5-A066-25045EF4B0CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D587548-30FC-46B5-A066-25045EF4B0CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D587548-30FC-46B5-A066-25045EF4B0CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{001B3616-EEEF-4519-B85F-AF6F19DF7F71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{001B3616-EEEF-4519-B85F-AF6F19DF7F71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{001B3616-EEEF-4519-B85F-AF6F19DF7F71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{001B3616-EEEF-4519-B85F-AF6F19DF7F71}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
