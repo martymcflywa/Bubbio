@@ -12,10 +12,11 @@ namespace Bubbio.Tests.Core.Builders
         {
             _child = new Child
             {
+                ParentId = Guid.NewGuid(),
                 Name = new Name { First = "Damon", Last = "Ponce" },
                 DateOfBirth = new DateTimeOffset(2017, 10, 17, 10, 2, 0, TimeSpan.FromHours(8)),
                 Gender = Gender.Boy,
-                InitialHeight = 370,
+                InitialHeight = 480,
                 InitialWeight = 3270
             };
         }

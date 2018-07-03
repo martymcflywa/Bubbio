@@ -1,4 +1,5 @@
-﻿using Bubbio.Core;
+﻿using System;
+using Bubbio.Core;
 using Bubbio.Core.Exceptions;
 using Bubbio.Domain.Validators;
 using Bubbio.Tests.Core.Builders;
@@ -21,6 +22,8 @@ namespace Bubbio.Domain.Tests.Scenarios
                 _childPostValidation = _childPreValidation.Validate();
             }
             catch (InvalidNameException) {}
+            catch (InvalidIdException) {}
+            catch (OrphanedChildException) {}
         }
 
         protected void ChildWithFirstName(string name) =>
@@ -46,6 +49,16 @@ namespace Bubbio.Domain.Tests.Scenarios
 
         protected void LastNameIsFormatted(string expected) =>
             Assert.Equal(expected, _childPostValidation.Name.Last);
+
+        protected void ChildWithoutId() =>
+            _childPreValidation = new ChildBuilder()
+                .WithId(new Guid())
+                .Build();
+
+        protected void ChildWithoutParent() =>
+            _childPreValidation = new ChildBuilder()
+                .WithParentId(new Guid())
+                .Build();
 
         protected void ChildIsInvalid() =>
             Assert.Null(_childPostValidation);
