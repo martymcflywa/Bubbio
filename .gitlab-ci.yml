@@ -6,17 +6,20 @@ stages:
   - deploy
 
 variables:
-  project: "Bubbio"
+  project: Bubbio
 
 before_script:
-  - "dotnet restore $project"
+  - dotnet restore $project
 
 build:
   stage: build
   script:
-    - "bash scripts/build.sh"
+    - bash scripts/build.sh
 
 test:
   stage: test
+  services:
+    - name: mongo:latest
+      alias: localhost
   script:
-    - "bash scripts/test.sh"
+    - bash scripts/test.sh
