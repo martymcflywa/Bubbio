@@ -1,5 +1,5 @@
 ﻿using System;
-using Bubbio.Core;
+using Bubbio.Core.Contracts;
 using Bubbio.Core.Exceptions;
 using Bubbio.Domain.Validators;
 using Bubbio.Tests.Core.Builders;
@@ -9,8 +9,8 @@ namespace Bubbio.Domain.Tests.Scenarios
 {
     public class ParentExTestsBase
     {
-        private Parent _parentPreValidation;
-        private Parent _parentPostValidation;
+        private IParent _parentPreValidation;
+        private IParent _parentPostValidation;
 
         protected string NamePreValidation;
         protected string NamePostValidation;

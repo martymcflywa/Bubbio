@@ -1,47 +1,48 @@
 ﻿using System;
 using Bubbio.Core;
+using Bubbio.Tests.Core.Mocks.Contracts;
 
 namespace Bubbio.Tests.Core.Builders
 {
     public sealed class ParentBuilder
     {
-        private readonly Parent _parent;
+        private readonly TestParent _testParent;
 
         public ParentBuilder()
         {
-            _parent = new Parent
+            _testParent = new TestParent
             {
-                Name = new Name { First = "Kim", Middle = "Chi", Last = "Ponce" }
+                Name = new TestName { First = "Kim", Middle = "Chi", Last = "Ponce" }
             };
         }
 
         public ParentBuilder WithId(Guid id)
         {
-            _parent.Id = id;
+            _testParent.Id = id;
             return this;
         }
 
         public ParentBuilder WithFirstName(string first)
         {
-            _parent.Name.First = first;
+            _testParent.Name.First = first;
             return this;
         }
 
         public ParentBuilder WithMiddleName(string middle)
         {
-            _parent.Name.Middle = middle;
+            _testParent.Name.Middle = middle;
             return this;
         }
 
         public ParentBuilder WithLastName(string last)
         {
-            _parent.Name.Last = last;
+            _testParent.Name.Last = last;
             return this;
         }
 
-        public Parent Build()
+        public TestParent Build()
         {
-            return _parent;
+            return _testParent;
         }
     }
 }
