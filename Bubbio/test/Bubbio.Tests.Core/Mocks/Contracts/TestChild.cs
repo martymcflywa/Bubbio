@@ -2,9 +2,9 @@
 using Bubbio.Core.Contracts;
 using Bubbio.Core.Contracts.Enums;
 
-namespace Bubbio.Core
+namespace Bubbio.Tests.Core.Mocks.Contracts
 {
-    public class Child : IChild
+    public class TestChild : IChild
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid ParentId { get; set; }

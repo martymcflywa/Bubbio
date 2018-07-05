@@ -1,8 +1,8 @@
 ﻿using Bubbio.Core.Contracts;
 
-namespace Bubbio.Core
+namespace Bubbio.Tests.Core.Mocks.Contracts
 {
-    public class Name : IName
+    public class TestName : IName
     {
         public string First { get; set; }
         public string Middle { get; set; } = string.Empty;
