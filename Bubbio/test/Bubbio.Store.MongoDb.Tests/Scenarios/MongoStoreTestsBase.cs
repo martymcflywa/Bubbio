@@ -9,32 +9,47 @@ namespace Bubbio.Store.MongoDb.Tests.Scenarios
     public class MongoStoreTestsBase<TEntity, TKey>
         where TEntity : IEntity<TKey>
     {
-        private IStore<TEntity, TKey> _collection;
+        private IStore<TEntity, TKey> _store;
         private TEntity _entity;
         private IEnumerable<TEntity> _entities;
+
+        private readonly MongoUrl _url = new MongoUrl("mongodb://localhost/test");
+        private const string CollectionName = "test";
 
         protected void StoreIsEmpty()
         {
             InitCollection();
         }
 
+        protected void StoreContains(TEntity entity)
+        {
+            InitCollection();
+            StoreInserts(entity);
+        }
+
         protected void StoreInserts(TEntity entity) =>
-            _collection.InsertAsync(entity).Wait();
+            _store.InsertAsync(entity).Wait();
 
         protected void StoreInserts(IEnumerable<TEntity> entities) =>
-            _collection.InsertAsync(entities).Wait();
+            _store.InsertAsync(entities).Wait();
 
         protected void StoreRetrievesOne(TKey id) =>
-            _entity = _collection.GetAsync(id).Result.SingleOrDefault();
+            _entity = _store.GetAsync(id).Result.SingleOrDefault();
 
         protected void StoreRetrievesOne(TEntity entity) =>
-            _entity = _collection.GetAsync(entity).Result.SingleOrDefault();
+            _entity = _store.GetAsync(entity).Result.SingleOrDefault();
 
         protected void StoreRetrievesMany(TKey id) =>
-            _entities = _collection.GetAsync(id).Result;
+            _entities = _store.GetAsync(id).Result;
 
         protected void StoreHas(long count) =>
-            Assert.Equal(count, _collection.CountAsync().Result);
+            Assert.Equal(count, _store.CountAsync().Result);
+
+        protected void StoreHas(TEntity expected) =>
+            Assert.True(expected.Id.Equals(_entity.Id));
+
+        protected void StoreHas(IEnumerable<TEntity> expected) =>
+            Assert.Equal(expected, _entities);
 
         protected void EntityExists() =>
             Assert.True(_entity != null);
@@ -43,11 +58,11 @@ namespace Bubbio.Store.MongoDb.Tests.Scenarios
             Assert.NotEmpty(_entities);
 
         private void Clear() =>
-            _collection.DeleteAllAsync().Wait();
+            _store.DeleteAllAsync().Wait();
 
         protected void InitCollection()
         {
-            _collection = new MongoStore<TEntity, TKey>(new MongoUrl("mongodb://localhost/test"), "test");
+            _store = new MongoStore<TEntity, TKey>(_url, CollectionName);
             Clear();
         }
     }
