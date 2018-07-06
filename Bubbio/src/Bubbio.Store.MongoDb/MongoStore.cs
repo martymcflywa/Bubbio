@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading.Tasks;
 using Bubbio.Core.Store;
 using MongoDB.Bson;
@@ -18,10 +19,18 @@ namespace Bubbio.Store.MongoDb
 
         public MongoStore(MongoUrl url, string collectionName)
         {
-            var client = new MongoClient(url);
+            var client = new MongoClient(Settings(url));
             var database = client.GetDatabase(url.DatabaseName);
             _collection = database.GetCollection<TEntity>(collectionName);
         }
+
+        private static MongoClientSettings Settings(MongoUrl url) =>
+            new MongoClientSettings
+            {
+                ApplicationName = Assembly.GetCallingAssembly().GetName().Name,
+                GuidRepresentation = GuidRepresentation.Standard,
+                Server = url.Server
+            };
 
         #region IStore<TEntity, TKey>
 
