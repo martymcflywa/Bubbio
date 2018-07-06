@@ -44,14 +44,18 @@ namespace Bubbio.Store.MongoDb
             await _collection.InsertManyAsync(entities);
         }
 
-        public Task<IEnumerable<TEntity>> GetAsync(TKey id)
+        public async Task<IEnumerable<TEntity>> GetAsync(TKey id)
         {
-            throw new NotImplementedException();
+            var result = await _collection.FindAsync(e => e.Id.Equals(id));
+            return result.ToEnumerable();
         }
 
-        public Task<IEnumerable<TEntity>> GetAsync(TEntity entity)
+        public async Task<IEnumerable<TEntity>> GetAsync(TEntity entity)
         {
-            throw new NotImplementedException();
+            var result = await _collection.FindAsync(
+                e => e.Id.Equals(entity.Id));
+
+            return result.ToEnumerable();
         }
 
         public Task<long> CountAsync()

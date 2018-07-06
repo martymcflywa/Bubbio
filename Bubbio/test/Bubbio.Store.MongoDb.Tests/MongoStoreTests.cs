@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Bubbio.Core.Contracts;
 using Bubbio.Store.MongoDb.Entities;
 using Bubbio.Store.MongoDb.Tests.Examples;
 using Bubbio.Store.MongoDb.Tests.Scenarios;
@@ -12,6 +11,18 @@ namespace Bubbio.Store.MongoDb.Tests
     public class MongoStoreTests : MongoStoreTestsBase<ParentEntity, Guid>
     {
         private readonly ParentEntityExamples _parentEntityExamples;
+
+        private Guid OneId =>
+            _parentEntityExamples.OneId;
+
+        private List<Guid> AllIds =>
+            _parentEntityExamples.AllIds;
+
+        private ParentEntity OneParent =>
+            _parentEntityExamples.OneParent;
+
+        private List<ParentEntity> AllParents =>
+            _parentEntityExamples.AllParents;
 
         public MongoStoreTests()
         {
@@ -36,16 +47,22 @@ namespace Bubbio.Store.MongoDb.Tests
                 .BDDfy();
         }
 
-        private Guid OneId =>
-            _parentEntityExamples.OneId;
+        [Fact]
+        public void GetOneById()
+        {
+            this.Given(_ => StoreContains(OneParent))
+                .When(_ => StoreRetrievesOne(OneParent.Id))
+                .Then(_ => StoreHas(OneParent))
+                .BDDfy();
+        }
 
-        private List<Guid> AllIds =>
-            _parentEntityExamples.AllIds;
-
-        private ParentEntity OneParent =>
-            _parentEntityExamples.OneParent;
-
-        private List<ParentEntity> AllParents =>
-            _parentEntityExamples.AllParents;
+        [Fact]
+        public void GetOneByEntity()
+        {
+            this.Given(_ => StoreContains(OneParent))
+                .When(_ => StoreRetrievesOne(OneParent))
+                .Then(_ => StoreHas(OneParent))
+                .BDDfy();
+        }
     }
 }
