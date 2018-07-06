@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Bubbio.Core.Contracts;
 using Bubbio.Core.Store;
-using Bubbio.Store.MongoDb.Tests.Examples;
 using MongoDB.Driver;
 using Xunit;
 

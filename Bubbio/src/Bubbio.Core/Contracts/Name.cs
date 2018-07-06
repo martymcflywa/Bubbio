@@ -1,11 +1,9 @@
-﻿using Bubbio.Core.Contracts;
-
-namespace Bubbio.Tests.Core.Mocks.Contracts
+﻿namespace Bubbio.Core.Contracts
 {
-    public class TestName : IName
+    public class Name : IName
     {
         public string First { get; set; }
-        public string Middle { get; set; } = string.Empty;
+        public string Middle { get; set; }
         public string Last { get; set; }
 
         public override string ToString()

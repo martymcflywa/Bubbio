@@ -22,7 +22,6 @@ namespace Bubbio.Domain.Tests.Scenarios
                 _childPostValidation = _childPreValidation.Validate();
             }
             catch (InvalidNameException) {}
-            catch (InvalidIdException) {}
             catch (OrphanedChildException) {}
         }
 
@@ -49,11 +48,6 @@ namespace Bubbio.Domain.Tests.Scenarios
 
         protected void LastNameIsFormatted(string expected) =>
             Assert.Equal(expected, _childPostValidation.Name.Last);
-
-        protected void ChildWithoutId() =>
-            _childPreValidation = new ChildBuilder()
-                .WithId(new Guid())
-                .Build();
 
         protected void ChildWithoutParent() =>
             _childPreValidation = new ChildBuilder()

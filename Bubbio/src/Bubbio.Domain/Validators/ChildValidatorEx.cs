@@ -9,17 +9,8 @@ namespace Bubbio.Domain.Validators
         public static IChild Validate(this IChild child)
         {
             return child
-                .ValidateId()
                 .ValidateParentId()
                 .ValidateName();
-        }
-
-        private static IChild ValidateId(this IChild child)
-        {
-            if (child.Id.IsEmpty())
-                throw new InvalidIdException(child.Name);
-
-            return child;
         }
 
         private static IChild ValidateParentId(this IChild child)

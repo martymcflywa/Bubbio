@@ -1,10 +1,9 @@
 ﻿using System;
 using Bubbio.Core.Contracts.Enums;
-using Bubbio.Core.Store;
 
 namespace Bubbio.Core.Contracts
 {
-    public interface IChild : IEntity<Guid>
+    public interface IChild
     {
         Guid ParentId { get; set; }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Bubbio.Core.Contracts;
+using Bubbio.Store.MongoDb.Entities;
 using Bubbio.Store.MongoDb.Tests.Examples;
 using Bubbio.Store.MongoDb.Tests.Scenarios;
 using TestStack.BDDfy;
@@ -8,13 +9,13 @@ using Xunit;
 
 namespace Bubbio.Store.MongoDb.Tests
 {
-    public class MongoStoreTests : MongoStoreTestsBase<IParent, Guid>
+    public class MongoStoreTests : MongoStoreTestsBase<ParentEntity, Guid>
     {
-        private readonly ParentExamples _parentExamples;
+        private readonly ParentEntityExamples _parentEntityExamples;
 
         public MongoStoreTests()
         {
-            _parentExamples = new ParentExamples();
+            _parentEntityExamples = new ParentEntityExamples();
         }
 
         [Fact]
@@ -36,15 +37,15 @@ namespace Bubbio.Store.MongoDb.Tests
         }
 
         private Guid OneId =>
-            _parentExamples.OneId;
+            _parentEntityExamples.OneId;
 
         private List<Guid> AllIds =>
-            _parentExamples.AllIds;
+            _parentEntityExamples.AllIds;
 
-        private IParent OneParent =>
-            _parentExamples.OneParent;
+        private ParentEntity OneParent =>
+            _parentEntityExamples.OneParent;
 
-        private List<IParent> AllParents =>
-            _parentExamples.AllParents;
+        private List<ParentEntity> AllParents =>
+            _parentEntityExamples.AllParents;
     }
 }

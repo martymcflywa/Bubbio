@@ -1,4 +1,5 @@
 ﻿using System;
+using Bubbio.Core.Contracts;
 using Bubbio.Core.Contracts.Enums;
 using Bubbio.Tests.Core.Mocks.Contracts;
 
@@ -13,7 +14,7 @@ namespace Bubbio.Tests.Core.Builders
             _testChild = new TestChild
             {
                 ParentId = Guid.NewGuid(),
-                Name = new TestName { First = "Damon", Last = "Ponce" },
+                Name = new Name { First = "Damon", Last = "Ponce" },
                 DateOfBirth = new DateTimeOffset(2017, 10, 17, 10, 2, 0, TimeSpan.FromHours(8)),
                 Gender = Gender.Boy,
                 InitialHeight = 480,

@@ -1,28 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bubbio.Core.Contracts;
-using Bubbio.Tests.Core.Builders;
+using Bubbio.Store.MongoDb.Entities;
+using Bubbio.Store.MongoDb.Tests.Builders;
 
 namespace Bubbio.Store.MongoDb.Tests.Examples
 {
-    public class ParentExamples
+    public class ParentEntityExamples
     {
         public List<Guid> AllIds { get; }
-        public List<IParent> AllParents { get; }
+        public List<ParentEntity> AllParents { get; }
 
-        public ParentExamples()
+        public ParentEntityExamples()
         {
-            AllIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
-            AllParents = new List<IParent>
+            AllIds = new List<Guid>
             {
-                new ParentBuilder()
+                Guid.NewGuid(),
+                Guid.NewGuid()
+            };
+
+            AllParents = new List<ParentEntity>
+            {
+                new ParentEntityBuilder()
                     .WithId(AllIds.First())
                     .WithFirstName("Martin")
                     .WithMiddleName("Raymond")
                     .WithLastName("Ponce")
                     .Build(),
-                new ParentBuilder()
+                new ParentEntityBuilder()
                     .WithId(AllIds.Last())
                     .WithFirstName("Kim")
                     .WithMiddleName("Chi")
@@ -32,6 +37,6 @@ namespace Bubbio.Store.MongoDb.Tests.Examples
         }
 
         public Guid OneId => AllIds.First();
-        public IParent OneParent => AllParents.First();
+        public ParentEntity OneParent => AllParents.First();
     }
 }

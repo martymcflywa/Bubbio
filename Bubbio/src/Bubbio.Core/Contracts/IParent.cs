@@ -1,9 +1,6 @@
-﻿using System;
-using Bubbio.Core.Store;
-
-namespace Bubbio.Core.Contracts
+﻿namespace Bubbio.Core.Contracts
 {
-    public interface IParent : IEntity<Guid>
+    public interface IParent
     {
         IName Name { get; set; }
     }
