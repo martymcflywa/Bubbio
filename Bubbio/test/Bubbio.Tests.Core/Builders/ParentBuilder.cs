@@ -1,5 +1,5 @@
 ﻿using System;
-using Bubbio.Core;
+using Bubbio.Core.Contracts;
 using Bubbio.Tests.Core.Mocks.Contracts;
 
 namespace Bubbio.Tests.Core.Builders
@@ -12,7 +12,7 @@ namespace Bubbio.Tests.Core.Builders
         {
             _testParent = new TestParent
             {
-                Name = new TestName { First = "Kim", Middle = "Chi", Last = "Ponce" }
+                Name = new Name { First = "Kim", Middle = "Chi", Last = "Ponce" }
             };
         }
 

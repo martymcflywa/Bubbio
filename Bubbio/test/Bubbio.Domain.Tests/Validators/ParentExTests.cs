@@ -56,14 +56,5 @@ namespace Bubbio.Domain.Tests.Validators
                 .WithExamples(Names.Invalid)
                 .BDDfy();
         }
-
-        [Fact]
-        public void WithoutId()
-        {
-            this.Given(_ => ParentWithoutId())
-                .When(_ => ParentIsValidated())
-                .Then(_ => ParentIsInvalid())
-                .BDDfy();
-        }
     }
 }

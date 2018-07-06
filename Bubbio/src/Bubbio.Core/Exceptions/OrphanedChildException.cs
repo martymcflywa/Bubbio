@@ -6,7 +6,7 @@ namespace Bubbio.Core.Exceptions
     public class OrphanedChildException : Exception
     {
         public OrphanedChildException(IChild child)
-            : base($"Child {child.Id} has no parent")
+            : base($"Child {child.Name.ToString()} has no parent")
         {
         }
     }

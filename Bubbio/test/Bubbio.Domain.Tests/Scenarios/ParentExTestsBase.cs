@@ -1,5 +1,4 @@
-﻿using System;
-using Bubbio.Core.Contracts;
+﻿using Bubbio.Core.Contracts;
 using Bubbio.Core.Exceptions;
 using Bubbio.Domain.Validators;
 using Bubbio.Tests.Core.Builders;
@@ -48,11 +47,6 @@ namespace Bubbio.Domain.Tests.Scenarios
 
         protected void LastNameIsFormatted(string expected) =>
             Assert.Equal(expected, _parentPostValidation.Name.Last);
-
-        protected void ParentWithoutId() =>
-            _parentPreValidation = new ParentBuilder()
-                .WithId(new Guid())
-                .Build();
 
         protected void ParentIsInvalid() =>
             Assert.Null(_parentPostValidation);
