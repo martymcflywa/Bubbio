@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Bubbio.Core.Store;
 using MongoDB.Driver;
@@ -27,6 +28,12 @@ namespace Bubbio.Store.MongoDb.Tests.Scenarios
             StoreInserts(entity);
         }
 
+        protected void StoreContains(IEnumerable<TEntity> entities)
+        {
+            InitCollection();
+            StoreInserts(entities);
+        }
+
         protected void StoreInserts(TEntity entity) =>
             _store.InsertAsync(entity).Wait();
 
@@ -39,8 +46,11 @@ namespace Bubbio.Store.MongoDb.Tests.Scenarios
         protected void StoreRetrievesOne(TEntity entity) =>
             _entity = _store.GetAsync(entity).Result.SingleOrDefault();
 
-        protected void StoreRetrievesMany(TKey id) =>
-            _entities = _store.GetAsync(id).Result;
+        protected void StoreRetrievesOne(Func<TEntity, bool> predicate) =>
+            _entity = _store.GetAsync(predicate).Result.SingleOrDefault();
+
+        protected void StoreRetrievesMany(Func<TEntity, bool> predicate) =>
+            _entities = _store.GetAsync(predicate).Result;
 
         protected void StoreHas(long count) =>
             Assert.Equal(count, _store.CountAsync().Result);
@@ -48,8 +58,18 @@ namespace Bubbio.Store.MongoDb.Tests.Scenarios
         protected void StoreHas(TEntity expected) =>
             Assert.True(expected.Id.Equals(_entity.Id));
 
-        protected void StoreHas(IEnumerable<TEntity> expected) =>
-            Assert.Equal(expected, _entities);
+        protected void StoreHas(IEnumerable<TEntity> expected)
+        {
+            var e = expected.ToArray();
+            var a = _entities.ToArray();
+            Assert.Equal(e.Length, a.Length);
+
+            for (var i = 0; i < e.Length; i++)
+            {
+                Assert.True(e[i].Id.Equals(a[i].Id));
+                Assert.Equal(e[i].GetType(), a[i].GetType());
+            }
+        }
 
         protected void EntityExists() =>
             Assert.True(_entity != null);

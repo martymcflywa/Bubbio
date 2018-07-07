@@ -58,6 +58,13 @@ namespace Bubbio.Store.MongoDb
             return result.ToEnumerable();
         }
 
+        public Task<IEnumerable<TEntity>> GetAsync(Func<TEntity, bool> predicate)
+        {
+            return Task.FromResult(_collection.AsQueryable()
+                .Where(predicate)
+                .AsEnumerable());
+        }
+
         public Task<long> CountAsync()
         {
             return _collection.CountDocumentsAsync(new BsonDocument());
@@ -72,19 +79,11 @@ namespace Bubbio.Store.MongoDb
 
         #region IQueryable<TKey>
 
-        public IEnumerator<TEntity> GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public Type ElementType { get; }
-        public Expression Expression { get; }
-        public IQueryProvider Provider { get; }
+        public IEnumerator<TEntity> GetEnumerator() => _collection.AsQueryable().GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public Type ElementType => _collection.AsQueryable().ElementType;
+        public Expression Expression => _collection.AsQueryable().Expression;
+        public IQueryProvider Provider => _collection.AsQueryable().Provider;
 
         #endregion
 

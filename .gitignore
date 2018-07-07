@@ -737,8 +737,6 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-#!! ERROR: typescript is undefined. Use list command to see defined gitignore types !!#
-
 ### VisualStudioCode ###
 .vscode/*
 !.vscode/settings.json
