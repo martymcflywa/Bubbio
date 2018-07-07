@@ -13,12 +13,6 @@ namespace Bubbio.Store.MongoDb.Tests
     {
         private readonly ParentEntityExamples _parentEntityExamples;
 
-        private Guid OneId =>
-            _parentEntityExamples.OneId;
-
-        private List<Guid> AllIds =>
-            _parentEntityExamples.AllIds;
-
         private ParentEntity OneParent =>
             _parentEntityExamples.OneParent;
 
@@ -83,6 +77,24 @@ namespace Bubbio.Store.MongoDb.Tests
                 .When(_ => StoreRetrievesMany(p => p.Id.Equals(AllParents.First().Id) ||
                                                    p.Id.Equals(AllParents.Last().Id)))
                 .Then(_ => StoreHas(AllParents))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void DropCollection()
+        {
+            this.Given(_ => StoreContains(AllParents))
+                .When(_ => StoreDropsCollection())
+                .Then(_ => StoreHas(0))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void DropDatabase()
+        {
+            this.Given(_ => StoreContains(AllParents))
+                .When(_ => StoreDropsDatabase())
+                .Then(_ => StoreHas(0))
                 .BDDfy();
         }
     }

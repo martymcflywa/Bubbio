@@ -16,6 +16,7 @@ namespace Bubbio.Core.Store
         Task<IEnumerable<TEntity>> GetAsync(Func<TEntity, bool> predicate);
 
         Task<long> CountAsync();
-        Task DeleteAllAsync();
+        Task DropCollectionAsync();
+        Task DropDatabaseAsync();
     }
 }
