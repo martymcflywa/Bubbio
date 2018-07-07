@@ -14,14 +14,21 @@ namespace Bubbio.Store.MongoDb
     public class MongoStore<TEntity, TKey> : IStore<TEntity, TKey>
         where TEntity : IEntity<TKey>
     {
-
+        private readonly MongoClient _client;
+        private readonly IMongoDatabase _database;
         private readonly IMongoCollection<TEntity> _collection;
+
+        private readonly string _databaseName;
+        private readonly string _collectionName;
 
         public MongoStore(MongoUrl url, string collectionName)
         {
-            var client = new MongoClient(Settings(url));
-            var database = client.GetDatabase(url.DatabaseName);
-            _collection = database.GetCollection<TEntity>(collectionName);
+            _collectionName = collectionName;
+            _databaseName = url.DatabaseName;
+
+            _client = new MongoClient(Settings(url));
+            _database = _client.GetDatabase(_databaseName);
+            _collection = _database.GetCollection<TEntity>(_collectionName);
         }
 
         private static MongoClientSettings Settings(MongoUrl url) =>
@@ -70,9 +77,14 @@ namespace Bubbio.Store.MongoDb
             return _collection.CountDocumentsAsync(new BsonDocument());
         }
 
-        public async Task DeleteAllAsync()
+        public async Task DropCollectionAsync()
         {
-            await _collection.DeleteManyAsync(new BsonDocument());
+            await _database.DropCollectionAsync(_collectionName);
+        }
+
+        public async Task DropDatabaseAsync()
+        {
+            await _client.DropDatabaseAsync(_databaseName);
         }
 
         #endregion

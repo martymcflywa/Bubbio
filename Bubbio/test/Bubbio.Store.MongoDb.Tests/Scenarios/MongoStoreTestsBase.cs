@@ -77,13 +77,16 @@ namespace Bubbio.Store.MongoDb.Tests.Scenarios
         protected void EntitiesExist() =>
             Assert.NotEmpty(_entities);
 
-        private void Clear() =>
-            _store.DeleteAllAsync().Wait();
+        protected void StoreDropsCollection() =>
+            _store.DropCollectionAsync().Wait();
+
+        protected void StoreDropsDatabase() =>
+            _store.DropDatabaseAsync().Wait();
 
         protected void InitCollection()
         {
             _store = new MongoStore<TEntity, TKey>(_url, CollectionName);
-            Clear();
+            StoreDropsCollection();
         }
     }
 }
