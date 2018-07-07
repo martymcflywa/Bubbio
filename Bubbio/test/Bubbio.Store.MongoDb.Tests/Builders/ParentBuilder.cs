@@ -3,11 +3,11 @@ using Bubbio.Store.MongoDb.Entities;
 
 namespace Bubbio.Store.MongoDb.Tests.Builders
 {
-    public class ParentEntityBuilder
+    public class ParentBuilder
     {
         private readonly Parent _parent;
 
-        public ParentEntityBuilder()
+        public ParentBuilder()
         {
             _parent = new Parent
             {
@@ -16,25 +16,25 @@ namespace Bubbio.Store.MongoDb.Tests.Builders
             };
         }
 
-        public ParentEntityBuilder WithId(Guid id)
+        public ParentBuilder WithId(Guid id)
         {
             _parent.Id = id;
             return this;
         }
 
-        public ParentEntityBuilder WithFirstName(string first)
+        public ParentBuilder WithFirstName(string first)
         {
             _parent.Name.First = first;
             return this;
         }
 
-        public ParentEntityBuilder WithMiddleName(string middle)
+        public ParentBuilder WithMiddleName(string middle)
         {
             _parent.Name.Middle = middle;
             return this;
         }
 
-        public ParentEntityBuilder WithLastName(string last)
+        public ParentBuilder WithLastName(string last)
         {
             _parent.Name.Last = last;
             return this;

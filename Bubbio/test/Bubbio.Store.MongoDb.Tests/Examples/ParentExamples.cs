@@ -6,14 +6,14 @@ using Bubbio.Store.MongoDb.Tests.Builders;
 
 namespace Bubbio.Store.MongoDb.Tests.Examples
 {
-    public class ParentEntityExamples
+    public class ParentExamples
     {
-        public List<Guid> AllIds { get; }
         public List<Parent> AllParents { get; }
+        public Parent OneParent => AllParents.First();
 
-        public ParentEntityExamples()
+        public ParentExamples()
         {
-            AllIds = new List<Guid>
+            var allIds = new List<Guid>
             {
                 Guid.NewGuid(),
                 Guid.NewGuid()
@@ -21,22 +21,19 @@ namespace Bubbio.Store.MongoDb.Tests.Examples
 
             AllParents = new List<Parent>
             {
-                new ParentEntityBuilder()
-                    .WithId(AllIds.First())
+                new ParentBuilder()
+                    .WithId(allIds.First())
                     .WithFirstName("Martin")
                     .WithMiddleName("Raymond")
                     .WithLastName("Ponce")
                     .Build(),
-                new ParentEntityBuilder()
-                    .WithId(AllIds.Last())
+                new ParentBuilder()
+                    .WithId(allIds.Last())
                     .WithFirstName("Kim")
                     .WithMiddleName("Chi")
                     .WithLastName("Ponce")
                     .Build()
             };
         }
-
-        public Guid OneId => AllIds.First();
-        public Parent OneParent => AllParents.First();
     }
 }
