@@ -13,5 +13,6 @@ namespace Bubbio.Tests.Core.Mocks.Contracts
         public Gender Gender { get; set; }
         public long InitialHeight { get; set; }
         public long InitialWeight { get; set; }
+        public long InitialHeadCircumference { get; set; }
     }
 }

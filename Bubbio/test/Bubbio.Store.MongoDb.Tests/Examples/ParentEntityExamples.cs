@@ -9,7 +9,7 @@ namespace Bubbio.Store.MongoDb.Tests.Examples
     public class ParentEntityExamples
     {
         public List<Guid> AllIds { get; }
-        public List<ParentEntity> AllParents { get; }
+        public List<Parent> AllParents { get; }
 
         public ParentEntityExamples()
         {
@@ -19,7 +19,7 @@ namespace Bubbio.Store.MongoDb.Tests.Examples
                 Guid.NewGuid()
             };
 
-            AllParents = new List<ParentEntity>
+            AllParents = new List<Parent>
             {
                 new ParentEntityBuilder()
                     .WithId(AllIds.First())
@@ -37,6 +37,6 @@ namespace Bubbio.Store.MongoDb.Tests.Examples
         }
 
         public Guid OneId => AllIds.First();
-        public ParentEntity OneParent => AllParents.First();
+        public Parent OneParent => AllParents.First();
     }
 }
