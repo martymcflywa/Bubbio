@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Bubbio.Store.MongoDb.Entities;
 using Bubbio.Store.MongoDb.Tests.Examples;
 using Bubbio.Store.MongoDb.Tests.Scenarios;
@@ -62,6 +63,26 @@ namespace Bubbio.Store.MongoDb.Tests
             this.Given(_ => StoreContains(OneParent))
                 .When(_ => StoreRetrievesOne(OneParent))
                 .Then(_ => StoreHas(OneParent))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void GetOneByPredicate()
+        {
+            this.Given(_ => StoreContains(OneParent))
+                .When(_ => StoreRetrievesOne(p => p.Id.Equals(OneParent.Id) &&
+                                                  p.GetType() == OneParent.GetType()))
+                .Then(_ => StoreHas(OneParent))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void GetManyByPredicate()
+        {
+            this.Given(_ => StoreContains(AllParents))
+                .When(_ => StoreRetrievesMany(p => p.Id.Equals(AllParents.First().Id) ||
+                                                   p.Id.Equals(AllParents.Last().Id)))
+                .Then(_ => StoreHas(AllParents))
                 .BDDfy();
         }
     }
