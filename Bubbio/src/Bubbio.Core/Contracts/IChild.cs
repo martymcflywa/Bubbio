@@ -13,5 +13,6 @@ namespace Bubbio.Core.Contracts
 
         long InitialHeight { get; set; }
         long InitialWeight { get; set; }
+        long InitialHeadCircumference { get; set; }
     }
 }

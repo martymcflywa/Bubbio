@@ -9,14 +9,14 @@ using Xunit;
 
 namespace Bubbio.Store.MongoDb.Tests
 {
-    public class MongoStoreTests : MongoStoreTestsBase<ParentEntity, Guid>
+    public class MongoStoreTests : MongoStoreTestsBase<Parent, Guid>
     {
         private readonly ParentEntityExamples _parentEntityExamples;
 
-        private ParentEntity OneParent =>
+        private Parent OneParent =>
             _parentEntityExamples.OneParent;
 
-        private List<ParentEntity> AllParents =>
+        private List<Parent> AllParents =>
             _parentEntityExamples.AllParents;
 
         public MongoStoreTests()
