@@ -1,0 +1,38 @@
+language: csharp
+solution: Bubbio.sln
+
+os: linux
+dist: trusty
+sudo: false
+mono: none
+dotnet: 2.1
+
+env:
+  global:
+    - CI_PROJECT_NAME=Bubbio
+    - DOTNETCORE=1
+
+branches:
+  only:
+    - master
+
+stages:
+  - test
+  - name: deploy
+    if: NOT type = pull_request
+
+jobs:
+  include:
+    - stage: test
+      services:
+        - mongodb
+      script: ./scripts/test.sh
+    - stage: deploy
+      script: ./scripts/deploy.sh
+
+notifications:
+  slack: 
+    rooms:
+      bruhritto:rwPNGKj7k0mNAjMb37U7MJVp#bubbio
+    on_success: always
+    on_failure: always
