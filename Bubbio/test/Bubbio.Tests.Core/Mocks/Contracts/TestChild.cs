@@ -11,8 +11,8 @@ namespace Bubbio.Tests.Core.Mocks.Contracts
         public IName Name { get; set; }
         public DateTimeOffset DateOfBirth { get; set; }
         public Gender Gender { get; set; }
-        public long InitialHeight { get; set; }
-        public long InitialWeight { get; set; }
-        public long InitialHeadCircumference { get; set; }
+        public float InitialHeight { get; set; }
+        public float InitialWeight { get; set; }
+        public float InitialHeadCircumference { get; set; }
     }
 }

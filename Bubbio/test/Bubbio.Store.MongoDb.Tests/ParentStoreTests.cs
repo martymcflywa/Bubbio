@@ -9,8 +9,9 @@ using Xunit;
 
 namespace Bubbio.Store.MongoDb.Tests
 {
-    public class ParentStoreTests : ParentStoreTestsBase<Parent, Guid>
+    public class ParentStoreTests : StoreTestsBase<Parent, Guid>
     {
+        private const string CollectionName = "parentstore";
         private readonly ParentExamples _parentExamples;
 
         private Parent OneParent =>
@@ -20,6 +21,7 @@ namespace Bubbio.Store.MongoDb.Tests
             _parentExamples.AllParents;
 
         public ParentStoreTests()
+            : base(CollectionName)
         {
             _parentExamples = new ParentExamples();
         }
@@ -77,24 +79,6 @@ namespace Bubbio.Store.MongoDb.Tests
                 .When(_ => StoreRetrievesMany(p => p.Id.Equals(AllParents.First().Id) ||
                                                    p.Id.Equals(AllParents.Last().Id)))
                 .Then(_ => StoreHas(AllParents))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void DropCollection()
-        {
-            this.Given(_ => StoreContains(AllParents))
-                .When(_ => StoreDropsCollection())
-                .Then(_ => StoreHas(0))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void DropDatabase()
-        {
-            this.Given(_ => StoreContains(AllParents))
-                .When(_ => StoreDropsDatabase())
-                .Then(_ => StoreHas(0))
                 .BDDfy();
         }
     }

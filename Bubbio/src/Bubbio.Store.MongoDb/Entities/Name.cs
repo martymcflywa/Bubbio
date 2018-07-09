@@ -1,4 +1,5 @@
 ﻿using System;
+using Bubbio.Core.Helpers;
 using Bubbio.Store.MongoDb.Contracts;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -20,5 +21,10 @@ namespace Bubbio.Store.MongoDb.Entities
         [BsonDefaultValue("")]
         [BsonIgnoreIfDefault]
         public string Last { get; set; }
+
+        public override string ToString()
+        {
+            return Middle.IsEmpty() ? $"{First} {Last}" : $"{First} {Middle} {Last}";
+        }
     }
 }

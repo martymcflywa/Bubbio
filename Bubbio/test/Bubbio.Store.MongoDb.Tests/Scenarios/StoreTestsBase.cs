@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Bubbio.Store.MongoDb.Tests.Scenarios
 {
-    public class ParentStoreTestsBase<TEntity, TKey>
+    public class StoreTestsBase<TEntity, TKey>
         where TEntity : IEntity<TKey>
     {
         private IStore<TEntity, TKey> _store;
@@ -15,22 +15,34 @@ namespace Bubbio.Store.MongoDb.Tests.Scenarios
         private IEnumerable<TEntity> _entities;
 
         private readonly MongoUrl _url = new MongoUrl("mongodb://localhost/test");
-        private const string CollectionName = "test";
+        private readonly string _collectionName;
+
+        public StoreTestsBase(string collectionName)
+        {
+            _collectionName = collectionName;
+            InitStore();
+            StoreDropsCollection();
+        }
+
+        protected void InitStore()
+        {
+            _store = new MongoStore<TEntity, TKey>(_url, _collectionName);
+        }
 
         protected void StoreIsEmpty()
         {
-            InitCollection();
+            StoreDropsCollection();
         }
 
         protected void StoreContains(TEntity entity)
         {
-            InitCollection();
+            InitStore();
             StoreInserts(entity);
         }
 
         protected void StoreContains(IEnumerable<TEntity> entities)
         {
-            InitCollection();
+            InitStore();
             StoreInserts(entities);
         }
 
@@ -82,11 +94,5 @@ namespace Bubbio.Store.MongoDb.Tests.Scenarios
 
         protected void StoreDropsDatabase() =>
             _store.DropDatabaseAsync().Wait();
-
-        protected void InitCollection()
-        {
-            _store = new MongoStore<TEntity, TKey>(_url, CollectionName);
-            StoreDropsCollection();
-        }
     }
 }
