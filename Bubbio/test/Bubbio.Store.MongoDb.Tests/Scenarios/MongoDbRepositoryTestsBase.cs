@@ -82,6 +82,34 @@ namespace Bubbio.Store.MongoDb.Tests.Scenarios
 
         #endregion
 
+        #region Update
+
+        protected async Task RepositoryIsUpdatedBy(TDocument updated)
+        {
+            await _repository.UpdateOneAsync<TDocument, TKey>(updated);
+            _document = await _repository.FindAsync<TDocument, TKey>(updated.Id);
+        }
+
+        protected async Task RepositoryIsUpdatedBy<TField>(
+            TDocument toUpdate,
+            Expression<Func<TDocument, TField>> field,
+            TField value)
+        {
+            await _repository.UpdateOneAsync<TDocument, TKey, TField>(toUpdate, field, value);
+            _document = await _repository.FindAsync<TDocument, TKey>(toUpdate.Id);
+        }
+
+        protected async Task RepositoryIsUpdatedBy<TField>(
+            Expression<Func<TDocument, bool>> filter,
+            Expression<Func<TDocument, TField>> field,
+            TField value)
+        {
+            await _repository.UpdateOneAsync<TDocument, TKey, TField>(filter, field, value);
+            _document = await _repository.FindAsync<TDocument, TKey>(filter);
+        }
+
+        #endregion
+
         #region Assert
 
         protected async Task RepositoryHas(int expected) =>

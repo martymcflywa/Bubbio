@@ -161,42 +161,79 @@ namespace Bubbio.Store.MongoDb
 
         #region Update
 
-        public async Task<bool> UpdateOneAsync<TDocument, TKey>(TDocument updated, CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey>
+        /// <inheritdoc />
+        public async Task<bool> UpdateOneAsync<TDocument, TKey>(
+                TDocument updated,
+                CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>
         {
-            throw new NotImplementedException();
+            var result = await HandlePartition<TDocument, TKey>(updated)
+                .ReplaceOneAsync(
+                    d => d.Id.Equals(updated.Id),
+                    updated,
+                    new UpdateOptions {IsUpsert = true},
+                    token);
+
+            return result.ModifiedCount.Equals(1);
         }
 
-        public async Task<bool> UpdateOneAsync<TDocument, TKey, TField>(TDocument toUpdate, Expression<Func<TDocument, TField>> field, TField value,
-            CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey>
+        /// <inheritdoc />
+        public async Task<bool> UpdateOneAsync<TDocument, TKey, TField>(
+                TDocument toUpdate,
+                Expression<Func<TDocument, TField>> field,
+                TField value,
+                CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>
         {
-            throw new NotImplementedException();
+            var task = Builders<TDocument>.Update.Set(field, value);
+            var result = await HandlePartition<TDocument, TKey>(toUpdate)
+                .UpdateOneAsync(d => d.Id.Equals(toUpdate.Id), task, cancellationToken: token);
+
+            return result.ModifiedCount.Equals(1);
         }
 
-        public async Task<bool> UpdateOneAsync<TDocument, TKey, TField>(Expression<Func<TDocument, bool>> filter, Expression<Func<TDocument, TField>> field, TField value,
-            string partitionKey = null, CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey>
+        /// <inheritdoc />
+        public async Task<bool> UpdateOneAsync<TDocument, TKey, TField>(
+                Expression<Func<TDocument, bool>> filter,
+                Expression<Func<TDocument, TField>> field,
+                TField value,
+                string partitionKey = null,
+                CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>
         {
-            throw new NotImplementedException();
+            var task = Builders<TDocument>.Update.Set(field, value);
+            var result = await HandlePartition<TDocument, TKey>(partitionKey)
+                .UpdateOneAsync(filter, task, cancellationToken: token);
+
+            return result.ModifiedCount.Equals(1);
         }
 
         #endregion
 
         #region Delete
 
+        /// <inheritdoc />
         public async Task<long> DeleteOneAsync<TDocument, TKey>(TDocument document, CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey>
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public async Task<long> DeleteOneAsync<TDocument, TKey>(Expression<Func<TDocument, bool>> filter, string partitionKey = null, CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey>
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public async Task<long> DeleteManyAsync<TDocument, TKey>(IEnumerable<TDocument> documents, CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey>
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public async Task<long> DeleteManyAsync<TDocument, TKey>(Expression<Func<TDocument, bool>> filter, string partitionKey = null, CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey>
         {
             throw new NotImplementedException();
@@ -206,12 +243,14 @@ namespace Bubbio.Store.MongoDb
 
         #region Projection
 
+        /// <inheritdoc />
         public async Task<TProject> ProjectOneAsync<TDocument, TKey, TProject>(Expression<Func<TDocument, bool>> filter, Expression<Func<TDocument, TProject>> projection, string partitionKey = null,
             CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey> where TProject : class
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public async Task<IEnumerable<TProject>> ProjectManyAsync<TDocument, TKey, TProject>(Expression<Func<TDocument, bool>> filter, Expression<Func<TDocument, TProject>> projection, string partitionKey = null,
             CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey> where TProject : class
         {
@@ -222,6 +261,7 @@ namespace Bubbio.Store.MongoDb
 
         #region Pagination
 
+        /// <inheritdoc />
         public async Task<IEnumerable<TDocument>> GetPaginatedAsync<TDocument, TKey>(Expression<Func<TDocument, bool>> filter, int take = 50, int skip = 0, string partitionKey = null,
             CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey>
         {
@@ -232,12 +272,14 @@ namespace Bubbio.Store.MongoDb
 
         #region Grouping
 
+        /// <inheritdoc />
         public async Task<IEnumerable<TProject>> GroupByAsync<TDocument, TKey, TGroup, TProject>(Expression<Func<TDocument, TGroup>> selector, Expression<Func<IGrouping<TGroup, TDocument>, TProject>> projection,
             string partitionKey = null, CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey> where TProject : class, new()
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public async Task<IEnumerable<TProject>> GroupByAsync<TDocument, TKey, TGroup, TProject>(Expression<Func<TDocument, bool>> filter, Expression<Func<TDocument, TGroup>> selector, Expression<Func<IGrouping<TGroup, TDocument>, TProject>> projection,
             string partitionKey = null, CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey> where TProject : class, new()
         {

@@ -18,6 +18,9 @@ namespace Bubbio.Store.MongoDb.Tests
         private List<TestDocument> AllDocuments =>
             _testDocumentExamples.AllDocuments;
 
+        private TestDocument UpdatedDocument =>
+            _testDocumentExamples.UpdatedDocument;
+
         public MongoDbRepositoryTests()
         {
             _testDocumentExamples = new TestDocumentExamples();
@@ -93,6 +96,40 @@ namespace Bubbio.Store.MongoDb.Tests
             this.Given(_ => RepositoryContains(AllDocuments))
                 .When(_ => RepositoryRetrievesCountByFilter(d => d.Version.Equals(AllDocuments.First().Version)))
                 .Then(_ => RepositoryCounted(AllDocuments.Count))
+                .BDDfy();
+        }
+
+        #endregion
+
+        #region Update
+
+        [Fact]
+        public void UpdateWithUpdatedDocument()
+        {
+            this.Given(_ => RepositoryContains(OneDocument))
+                .When(_ => RepositoryIsUpdatedBy(UpdatedDocument))
+                .Then(_ => RepositoryHas(UpdatedDocument))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void UpdateWithFieldSelector()
+        {
+            this.Given(_ => RepositoryContains(OneDocument))
+                .When(_ => RepositoryIsUpdatedBy(OneDocument, field => field.Name, UpdatedDocument.Name))
+                .Then(_ => RepositoryHas(UpdatedDocument))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void UpdateWithFilterAndFieldSelector()
+        {
+            this.Given(_ => RepositoryContains(OneDocument))
+                .When(_ => RepositoryIsUpdatedBy(
+                    doc => doc.Id.Equals(UpdatedDocument.Id),
+                    field => field.Timestamp,
+                    UpdatedDocument.Timestamp))
+                .Then(_ => RepositoryHas(UpdatedDocument))
                 .BDDfy();
         }
 
