@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Bubbio.Store.MongoDb.Abstractions;
 using Bubbio.Store.MongoDb.Models;
@@ -23,6 +24,7 @@ namespace Bubbio.Store.MongoDb.Tests.Scenarios
         private IFindFluent<TDocument, TDocument> _cursor;
         private bool _foundAny;
         private long _count;
+        private long _deleted;
 
         protected MongoDbRepositoryTestsBase()
         {
@@ -110,6 +112,30 @@ namespace Bubbio.Store.MongoDb.Tests.Scenarios
 
         #endregion
 
+        #region Delete
+
+        protected async Task RepositoryDeletesOne(TDocument document)
+        {
+            _deleted = await _repository.DeleteOneAsync<TDocument, TKey>(document);
+        }
+
+        protected async Task RepositoryDeletesOne(Expression<Func<TDocument, bool>> filter)
+        {
+            _deleted = await _repository.DeleteOneAsync<TDocument, TKey>(filter);
+        }
+
+        protected async Task RepositoryDeletesMany(IEnumerable<TDocument> documents)
+        {
+            _deleted = await _repository.DeleteManyAsync<TDocument, TKey>(documents);
+        }
+
+        protected async Task RepositoryDeletesMany(Expression<Func<TDocument, bool>> filter)
+        {
+            _deleted = await _repository.DeleteManyAsync<TDocument, TKey>(filter);
+        }
+
+        #endregion
+
         #region Assert
 
         protected async Task RepositoryHas(int expected) =>
@@ -136,6 +162,9 @@ namespace Bubbio.Store.MongoDb.Tests.Scenarios
 
         protected void RepositoryCounted(long expected) =>
             Assert.Equal(expected, _count);
+
+        protected void RepositoryDeleted(long expected) =>
+            Assert.Equal(expected, _deleted);
 
         #endregion
     }

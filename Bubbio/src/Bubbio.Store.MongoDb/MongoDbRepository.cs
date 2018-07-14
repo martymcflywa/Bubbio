@@ -216,27 +216,53 @@ namespace Bubbio.Store.MongoDb
         #region Delete
 
         /// <inheritdoc />
-        public async Task<long> DeleteOneAsync<TDocument, TKey>(TDocument document, CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey>
+        public async Task<long> DeleteOneAsync<TDocument, TKey>(
+                TDocument document,
+                CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>
         {
-            throw new NotImplementedException();
+            return (await HandlePartition<TDocument, TKey>(document)
+                    .DeleteOneAsync(d => d.Id.Equals(document.Id), token))
+                .DeletedCount;
         }
 
         /// <inheritdoc />
-        public async Task<long> DeleteOneAsync<TDocument, TKey>(Expression<Func<TDocument, bool>> filter, string partitionKey = null, CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey>
+        public async Task<long> DeleteOneAsync<TDocument, TKey>(
+                Expression<Func<TDocument, bool>> filter,
+                string partitionKey = null,
+                CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>
         {
-            throw new NotImplementedException();
+            return (await HandlePartition<TDocument, TKey>(partitionKey)
+                    .DeleteOneAsync(filter, token))
+                .DeletedCount;
         }
 
         /// <inheritdoc />
-        public async Task<long> DeleteManyAsync<TDocument, TKey>(IEnumerable<TDocument> documents, CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey>
+        public async Task<long> DeleteManyAsync<TDocument, TKey>(
+                IEnumerable<TDocument> documents,
+                CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>
         {
-            throw new NotImplementedException();
+            var enumerable = documents.ToList();
+            if (!enumerable.Any())
+                return 0;
+
+            var idsToDelete = enumerable.Select(d => d.Id).ToList();
+            return (await HandlePartition<TDocument, TKey>(enumerable.FirstOrDefault())
+                    .DeleteManyAsync(d => idsToDelete.Contains(d.Id), token))
+                .DeletedCount;
         }
 
         /// <inheritdoc />
         public async Task<long> DeleteManyAsync<TDocument, TKey>(Expression<Func<TDocument, bool>> filter, string partitionKey = null, CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey>
         {
-            throw new NotImplementedException();
+            return (await HandlePartition<TDocument, TKey>(partitionKey)
+                    .DeleteManyAsync(filter, token))
+                .DeletedCount;
         }
 
         #endregion

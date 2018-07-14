@@ -135,6 +135,50 @@ namespace Bubbio.Store.MongoDb.Tests
 
         #endregion
 
+        #region Delete
+
+        [Fact]
+        public void DeleteOneByDocument()
+        {
+            this.Given(_ => RepositoryContains(OneDocument))
+                .When(_ => RepositoryDeletesOne(OneDocument))
+                .Then(_ => RepositoryDeleted(1))
+                .And(_ => RepositoryHas(0))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void DeleteOneByFilter()
+        {
+            this.Given(_ => RepositoryContains(OneDocument))
+                .When(_ => RepositoryDeletesOne(d => d.Name.Equals(OneDocument.Name)))
+                .Then(_ => RepositoryDeleted(1))
+                .And(_ => RepositoryHas(0))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void DeleteManyByDocuments()
+        {
+            this.Given(_ => RepositoryContains(AllDocuments))
+                .When(_ => RepositoryDeletesMany(AllDocuments))
+                .Then(_ => RepositoryDeleted(AllDocuments.Count))
+                .And(_ => RepositoryHas(0))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void DeleteManyByFilter()
+        {
+            this.Given(_ => RepositoryContains(AllDocuments))
+                .When(_ => RepositoryDeletesMany(d => d.Version.Equals(OneDocument.Version)))
+                .Then(_ => RepositoryDeleted(AllDocuments.Count))
+                .And(_ => RepositoryHas(0))
+                .BDDfy();
+        }
+
+        #endregion
+
         #endregion
     }
 }
