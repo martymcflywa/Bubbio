@@ -17,8 +17,6 @@ namespace Bubbio.Store.MongoDb.Tests.Examples
         public List<TestProjection> AllProjections { get; }
         public TestProjection OneProjection => AllProjections.First();
 
-        public TestProjectionComparer ProjectionComparer => new TestProjectionComparer();
-
         public TestDocumentExamples()
         {
             Ids = new List<Guid>
@@ -81,22 +79,5 @@ namespace Bubbio.Store.MongoDb.Tests.Examples
                 Timestamp = DateTimeOffset.UtcNow,
                 Version = 2
             };
-
-        public sealed class TestProjectionComparer : IEqualityComparer<TestProjection>
-        {
-            public bool Equals(TestProjection x, TestProjection y)
-            {
-                return x.Id.Equals(y.Id) &&
-                       x.Name.Equals(y.Name) &&
-                       x.Version.Equals(y.Version);
-            }
-
-            public int GetHashCode(TestProjection obj)
-            {
-                return obj.Id.GetHashCode() ^
-                       obj.Name.GetHashCode() ^
-                       obj.Version.GetHashCode();
-            }
-        }
     }
 }

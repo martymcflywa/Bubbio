@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Bubbio.Store.MongoDb.Abstractions;
 using Bubbio.Store.MongoDb.Models;
+using FluentAssertions;
 using MongoDB.Driver;
-using Xunit;
 
 namespace Bubbio.Store.MongoDb.Tests.Scenarios
 {
@@ -160,39 +159,31 @@ namespace Bubbio.Store.MongoDb.Tests.Scenarios
 
         #region Assert
 
-        protected async Task RepositoryHas(int expected) =>
-            Assert.Equal(expected, await RepositoryRetrievesCountForCollection());
+        protected async Task RepositoryHas(long expected) =>
+            (await RepositoryRetrievesCountForCollection())
+                .Should().Be(expected);
 
+        // TODO: this is brittle for update tests, feed it a better expected.
         protected void RepositoryHas(TDocument expected) =>
-            Assert.True(expected.Id.Equals(_document.Id));
+            _document.Id.Should().BeEquivalentTo(expected.Id);
 
-        protected void RepositoryHas(IEnumerable<TDocument> expected)
-        {
-            var e = expected.ToArray();
-            var a = _documents.ToArray();
-            Assert.Equal(e.Length, a.Length);
-
-            for (var i = 0; i < e.Length; i++)
-            {
-                Assert.True(e[i].Id.Equals(a[i].Id));
-                Assert.Equal(e[i].GetType(), a[i].GetType());
-            }
-        }
+        protected void RepositoryHas(IEnumerable<TDocument> expected) =>
+            _documents.Should().BeEquivalentTo(expected);
 
         protected void RepositoryFoundAny(bool expected) =>
-            Assert.Equal(expected, _foundAny);
+            _foundAny.Should().Be(expected);
 
         protected void RepositoryCounted(long expected) =>
-            Assert.Equal(expected, _count);
+            _count.Should().Be(expected);
 
         protected void RepositoryDeleted(long expected) =>
-            Assert.Equal(expected, _deleted);
+            _deleted.Should().Be(expected);
 
-        protected void DocumentIsProjected(TProject expected, IEqualityComparer<TProject> comparer) =>
-            Assert.Equal(expected, _projectedDocument, comparer);
+        protected void DocumentIsProjected(TProject expected) =>
+            _projectedDocument.Should().BeEquivalentTo(expected);
 
-        protected void DocumentsAreProjected(IEnumerable<TProject> expected, IEqualityComparer<TProject> comparer) =>
-            Assert.Equal(expected, _projectedDocuments, comparer);
+        protected void DocumentsAreProjected(IEnumerable<TProject> expected) =>
+            _projectedDocuments.Should().BeEquivalentTo(expected);
 
         #endregion
     }

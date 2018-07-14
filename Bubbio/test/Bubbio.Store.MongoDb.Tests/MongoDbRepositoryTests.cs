@@ -27,9 +27,6 @@ namespace Bubbio.Store.MongoDb.Tests
         private IEnumerable<TestProjection> AllProjections =>
             _testDocumentExamples.AllProjections;
 
-        private TestDocumentExamples.TestProjectionComparer ProjectionComparer =>
-            _testDocumentExamples.ProjectionComparer;
-
         public MongoDbRepositoryTests()
         {
             _testDocumentExamples = new TestDocumentExamples();
@@ -202,7 +199,7 @@ namespace Bubbio.Store.MongoDb.Tests
                         Name = d.Name,
                         Version = d.Version
                     }))
-                .Then(_ => DocumentIsProjected(OneProjection, ProjectionComparer))
+                .Then(_ => DocumentIsProjected(OneProjection))
                 .BDDfy();
         }
 
@@ -218,7 +215,7 @@ namespace Bubbio.Store.MongoDb.Tests
                         Name = d.Name,
                         Version = d.Version
                     }))
-                .Then(_ => DocumentsAreProjected(AllProjections, ProjectionComparer))
+                .Then(_ => DocumentsAreProjected(AllProjections))
                 .BDDfy();
         }
 
