@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Bubbio.Store.MongoDb.Tests
 {
-    public class MongoDbRepositoryTests : MongoDbRepositoryTestsBase<TestDocument, Guid>
+    public class MongoDbRepositoryTests : MongoDbRepositoryTestsBase<TestDocument, Guid, TestProjection>
     {
         private readonly TestDocumentExamples _testDocumentExamples;
 
@@ -20,6 +20,15 @@ namespace Bubbio.Store.MongoDb.Tests
 
         private TestDocument UpdatedDocument =>
             _testDocumentExamples.UpdatedDocument;
+
+        private TestProjection OneProjection =>
+            _testDocumentExamples.OneProjection;
+
+        private IEnumerable<TestProjection> AllProjections =>
+            _testDocumentExamples.AllProjections;
+
+        private TestDocumentExamples.TestProjectionComparer ProjectionComparer =>
+            _testDocumentExamples.ProjectionComparer;
 
         public MongoDbRepositoryTests()
         {
@@ -174,6 +183,42 @@ namespace Bubbio.Store.MongoDb.Tests
                 .When(_ => RepositoryDeletesMany(d => d.Version.Equals(OneDocument.Version)))
                 .Then(_ => RepositoryDeleted(AllDocuments.Count))
                 .And(_ => RepositoryHas(0))
+                .BDDfy();
+        }
+
+        #endregion
+
+        #region Project
+
+        [Fact]
+        public void ProjectOne()
+        {
+            this.Given(_ => RepositoryContains(OneDocument))
+                .When(_ => RepositoryProjectsOne(
+                    d => d.Id.Equals(OneDocument.Id),
+                    d => new TestProjection
+                    {
+                        Id = d.Id,
+                        Name = d.Name,
+                        Version = d.Version
+                    }))
+                .Then(_ => DocumentIsProjected(OneProjection, ProjectionComparer))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void ProjectMany()
+        {
+            this.Given(_ => RepositoryContains(AllDocuments))
+                .When(_ => RepositoryProjectsMany(
+                    d => d.Version.Equals(OneDocument.Version),
+                    d => new TestProjection
+                    {
+                        Id = d.Id,
+                        Name = d.Name,
+                        Version = d.Version
+                    }))
+                .Then(_ => DocumentsAreProjected(AllProjections, ProjectionComparer))
                 .BDDfy();
         }
 

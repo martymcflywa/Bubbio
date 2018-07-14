@@ -270,17 +270,35 @@ namespace Bubbio.Store.MongoDb
         #region Projection
 
         /// <inheritdoc />
-        public async Task<TProject> ProjectOneAsync<TDocument, TKey, TProject>(Expression<Func<TDocument, bool>> filter, Expression<Func<TDocument, TProject>> projection, string partitionKey = null,
-            CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey> where TProject : class
+        public async Task<TProject> ProjectOneAsync<TDocument, TKey, TProject>(
+                Expression<Func<TDocument, bool>> filter,
+                Expression<Func<TDocument, TProject>> projection,
+                string partitionKey = null,
+                CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>
+            where TProject : class
         {
-            throw new NotImplementedException();
+            return await HandlePartition<TDocument, TKey>(partitionKey)
+                .Find(filter)
+                .Project(projection)
+                .FirstOrDefaultAsync(token);
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<TProject>> ProjectManyAsync<TDocument, TKey, TProject>(Expression<Func<TDocument, bool>> filter, Expression<Func<TDocument, TProject>> projection, string partitionKey = null,
-            CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey> where TProject : class
+        public async Task<IEnumerable<TProject>> ProjectManyAsync<TDocument, TKey, TProject>(
+                Expression<Func<TDocument, bool>> filter,
+                Expression<Func<TDocument, TProject>> projection,
+                string partitionKey = null,
+                CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>
+            where TProject : class
         {
-            throw new NotImplementedException();
+            return await HandlePartition<TDocument, TKey>(partitionKey)
+                .Find(filter)
+                .Project(projection)
+                .ToListAsync(token);
         }
 
         #endregion

@@ -14,6 +14,11 @@ namespace Bubbio.Store.MongoDb.Tests.Examples
 
         public TestDocument UpdatedDocument => UpdateDocument(OneDocument);
 
+        public List<TestProjection> AllProjections { get; }
+        public TestProjection OneProjection => AllProjections.First();
+
+        public TestProjectionComparer ProjectionComparer => new TestProjectionComparer();
+
         public TestDocumentExamples()
         {
             Ids = new List<Guid>
@@ -44,6 +49,28 @@ namespace Bubbio.Store.MongoDb.Tests.Examples
                     .WithVersion(1)
                     .Build()
             };
+
+            AllProjections = new List<TestProjection>
+            {
+                new TestProjection
+                {
+                    Id = AllDocuments[0].Id,
+                    Name = AllDocuments[0].Name,
+                    Version = AllDocuments[0].Version
+                },
+                new TestProjection
+                {
+                    Id = AllDocuments[1].Id,
+                    Name = AllDocuments[1].Name,
+                    Version = AllDocuments[1].Version
+                },
+                new TestProjection
+                {
+                    Id = AllDocuments[2].Id,
+                    Name = AllDocuments[2].Name,
+                    Version = AllDocuments[2].Version
+                }
+            };
         }
 
         private static TestDocument UpdateDocument(TestDocument document) =>
@@ -54,5 +81,22 @@ namespace Bubbio.Store.MongoDb.Tests.Examples
                 Timestamp = DateTimeOffset.UtcNow,
                 Version = 2
             };
+
+        public sealed class TestProjectionComparer : IEqualityComparer<TestProjection>
+        {
+            public bool Equals(TestProjection x, TestProjection y)
+            {
+                return x.Id.Equals(y.Id) &&
+                       x.Name.Equals(y.Name) &&
+                       x.Version.Equals(y.Version);
+            }
+
+            public int GetHashCode(TestProjection obj)
+            {
+                return obj.Id.GetHashCode() ^
+                       obj.Name.GetHashCode() ^
+                       obj.Version.GetHashCode();
+            }
+        }
     }
 }

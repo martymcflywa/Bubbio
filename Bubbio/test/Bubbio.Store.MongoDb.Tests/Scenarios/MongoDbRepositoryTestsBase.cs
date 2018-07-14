@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading;
 using System.Threading.Tasks;
 using Bubbio.Store.MongoDb.Abstractions;
 using Bubbio.Store.MongoDb.Models;
@@ -11,9 +10,10 @@ using Xunit;
 
 namespace Bubbio.Store.MongoDb.Tests.Scenarios
 {
-    public abstract class MongoDbRepositoryTestsBase<TDocument, TKey>
+    public abstract class MongoDbRepositoryTestsBase<TDocument, TKey, TProject>
         where TDocument : IDocument<TKey>
         where TKey : IEquatable<TKey>
+        where TProject : class
     {
         private readonly IMongoDbContext _dbContext;
         private readonly IMongoDbRepository _repository;
@@ -22,6 +22,8 @@ namespace Bubbio.Store.MongoDb.Tests.Scenarios
         private TDocument _document;
         private IEnumerable<TDocument> _documents;
         private IFindFluent<TDocument, TDocument> _cursor;
+        private TProject _projectedDocument;
+        private IEnumerable<TProject> _projectedDocuments;
         private bool _foundAny;
         private long _count;
         private long _deleted;
@@ -136,6 +138,26 @@ namespace Bubbio.Store.MongoDb.Tests.Scenarios
 
         #endregion
 
+        #region Project
+
+        protected async Task RepositoryProjectsOne(
+            Expression<Func<TDocument, bool>> filter,
+            Expression<Func<TDocument, TProject>> projection)
+        {
+            _projectedDocument = await _repository.ProjectOneAsync<TDocument, TKey, TProject>(
+                filter, projection);
+        }
+
+        protected async Task RepositoryProjectsMany(
+            Expression<Func<TDocument, bool>> filter,
+            Expression<Func<TDocument, TProject>> projection)
+        {
+            _projectedDocuments = await _repository.ProjectManyAsync<TDocument, TKey, TProject>(
+                filter, projection);
+        }
+
+        #endregion
+
         #region Assert
 
         protected async Task RepositoryHas(int expected) =>
@@ -165,6 +187,12 @@ namespace Bubbio.Store.MongoDb.Tests.Scenarios
 
         protected void RepositoryDeleted(long expected) =>
             Assert.Equal(expected, _deleted);
+
+        protected void DocumentIsProjected(TProject expected, IEqualityComparer<TProject> comparer) =>
+            Assert.Equal(expected, _projectedDocument, comparer);
+
+        protected void DocumentsAreProjected(IEnumerable<TProject> expected, IEqualityComparer<TProject> comparer) =>
+            Assert.Equal(expected, _projectedDocuments, comparer);
 
         #endregion
     }
