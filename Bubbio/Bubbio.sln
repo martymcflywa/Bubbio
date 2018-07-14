@@ -11,9 +11,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Domain.Tests", "test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Tests.Core", "test\Bubbio.Tests.Core\Bubbio.Tests.Core.csproj", "{001B3616-EEEF-4519-B85F-AF6F19DF7F71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Store.MongoDb", "src\Bubbio.Store.MongoDb\Bubbio.Store.MongoDb.csproj", "{E2DCB62E-5DF9-448A-80A0-BA8837FE8CBF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Repository.MongoDb", "src\Bubbio.Repository.MongoDb\Bubbio.Repository.MongoDb.csproj", "{C8437E58-47D8-4E73-8CB8-86364E5E901E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Store.MongoDb.Tests", "test\Bubbio.Store.MongoDb.Tests\Bubbio.Store.MongoDb.Tests.csproj", "{76C09DEC-0118-498F-B8A4-918324FA186B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Repository.MongoDb.Tests", "test\Bubbio.Repository.MongoDb.Tests\Bubbio.Repository.MongoDb.Tests.csproj", "{CCBBB7F7-595B-47F0-B119-9E592FEF5F01}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,13 +41,13 @@ Global
 		{001B3616-EEEF-4519-B85F-AF6F19DF7F71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{001B3616-EEEF-4519-B85F-AF6F19DF7F71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{001B3616-EEEF-4519-B85F-AF6F19DF7F71}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E2DCB62E-5DF9-448A-80A0-BA8837FE8CBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E2DCB62E-5DF9-448A-80A0-BA8837FE8CBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E2DCB62E-5DF9-448A-80A0-BA8837FE8CBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E2DCB62E-5DF9-448A-80A0-BA8837FE8CBF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{76C09DEC-0118-498F-B8A4-918324FA186B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{76C09DEC-0118-498F-B8A4-918324FA186B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{76C09DEC-0118-498F-B8A4-918324FA186B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{76C09DEC-0118-498F-B8A4-918324FA186B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8437E58-47D8-4E73-8CB8-86364E5E901E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8437E58-47D8-4E73-8CB8-86364E5E901E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8437E58-47D8-4E73-8CB8-86364E5E901E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8437E58-47D8-4E73-8CB8-86364E5E901E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCBBB7F7-595B-47F0-B119-9E592FEF5F01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCBBB7F7-595B-47F0-B119-9E592FEF5F01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCBBB7F7-595B-47F0-B119-9E592FEF5F01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCBBB7F7-595B-47F0-B119-9E592FEF5F01}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
