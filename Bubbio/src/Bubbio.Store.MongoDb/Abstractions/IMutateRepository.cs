@@ -216,8 +216,8 @@ namespace Bubbio.Store.MongoDb.Abstractions
         /// Async get paginated collection of documents matching linq predicate filter.
         /// </summary>
         /// <param name="filter">Linq predicate filter.</param>
-        /// <param name="take">Number of documents to take, default is 50.</param>
         /// <param name="skip">Number of documents to skip, default is 0.</param>
+        /// <param name="take">Number of documents to take, default is 50.</param>
         /// <param name="partitionKey">Optional partition key.</param>
         /// <param name="token">Optional cancellation token.</param>
         /// <typeparam name="TDocument">The type of document.</typeparam>
@@ -225,8 +225,8 @@ namespace Bubbio.Store.MongoDb.Abstractions
         /// <returns></returns>
         Task<IEnumerable<TDocument>> GetPaginatedAsync<TDocument, TKey>(
                 Expression<Func<TDocument, bool>> filter,
-                int take = 50,
                 int skip = 0,
+                int take = 50,
                 string partitionKey = null,
                 CancellationToken token = default)
             where TDocument : IDocument<TKey>

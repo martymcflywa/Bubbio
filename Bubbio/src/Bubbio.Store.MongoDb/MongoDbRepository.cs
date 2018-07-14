@@ -306,10 +306,20 @@ namespace Bubbio.Store.MongoDb
         #region Pagination
 
         /// <inheritdoc />
-        public async Task<IEnumerable<TDocument>> GetPaginatedAsync<TDocument, TKey>(Expression<Func<TDocument, bool>> filter, int take = 50, int skip = 0, string partitionKey = null,
-            CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey>
+        public async Task<IEnumerable<TDocument>> GetPaginatedAsync<TDocument, TKey>(
+                Expression<Func<TDocument, bool>> filter,
+                int skip = 0,
+                int take = 50,
+                string partitionKey = null,
+                CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>
         {
-            throw new NotImplementedException();
+            return await HandlePartition<TDocument, TKey>(partitionKey)
+                .Find(filter)
+                .Skip(skip)
+                .Limit(take)
+                .ToListAsync(token);
         }
 
         #endregion

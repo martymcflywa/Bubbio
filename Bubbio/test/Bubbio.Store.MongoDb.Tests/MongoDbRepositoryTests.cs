@@ -219,6 +219,16 @@ namespace Bubbio.Store.MongoDb.Tests
                 .BDDfy();
         }
 
+        [Fact]
+        public void ReadPaginated()
+        {
+            this.Given(_ => RepositoryContains(AllDocuments))
+                .When(_ => RepositoryRetrievesPaginated(
+                    doc => doc.Version.Equals(OneDocument.Version), 0, 2))
+                .Then(_ => RepositoryHas(AllDocuments.Take(2)))
+                .BDDfy();
+        }
+
         #endregion
 
         #endregion

@@ -157,6 +157,18 @@ namespace Bubbio.Store.MongoDb.Tests.Scenarios
 
         #endregion
 
+        #region Pagination
+
+        protected async Task RepositoryRetrievesPaginated(
+            Expression<Func<TDocument, bool>> filter,
+            int skip,
+            int take)
+        {
+            _documents = await _repository.GetPaginatedAsync<TDocument, TKey>(filter, skip, take);
+        }
+
+        #endregion
+
         #region Assert
 
         protected async Task RepositoryHas(long expected) =>
