@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Bubbio.Repository.MongoDb.Models;
+using Bubbio.Core.Repository;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -16,8 +16,8 @@ namespace Bubbio.Repository.MongoDb.Interfaces
         /// Return collection for TDocument with a partition key.
         /// </summary>
         /// <param name="partitionKey">Optional partition key.</param>
-        /// <typeparam name="TDocument">The type of document.</typeparam>
-        /// <typeparam name="TKey">The type of primary key.</typeparam>
+        /// <typeparam name="TDocument">The document type.</typeparam>
+        /// <typeparam name="TKey">The primary key type.</typeparam>
         /// <returns></returns>
         IMongoCollection<TDocument> GetCollection<TDocument, TKey>(string partitionKey = null)
             where TDocument : IDocument<TKey>
@@ -28,8 +28,8 @@ namespace Bubbio.Repository.MongoDb.Interfaces
         /// </summary>
         /// <param name="partitionKey">Optional partition key.</param>
         /// <param name="token">Optional cancellation token.</param>
-        /// <typeparam name="TDocument">The type of document.</typeparam>
-        /// <typeparam name="TKey">The type of primary key.</typeparam>
+        /// <typeparam name="TDocument">The document type.</typeparam>
+        /// <typeparam name="TKey">The primary key type.</typeparam>
         /// <returns></returns>
         Task DropCollectionAsync<TDocument, TKey>(string partitionKey = null, CancellationToken token = default)
             where TDocument : IDocument<TKey>

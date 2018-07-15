@@ -105,6 +105,48 @@ namespace Bubbio.Repository.MongoDb.Tests
                 .BDDfy();
         }
 
+        [Fact]
+        public void ProjectOne()
+        {
+            this.Given(_ => RepositoryContains(OneDocument))
+                .When(_ => RepositoryProjectsOne(
+                    d => d.Id.Equals(OneDocument.Id),
+                    d => new TestProjection
+                    {
+                        Id = d.Id,
+                        Name = d.Name,
+                        Version = d.Version
+                    }))
+                .Then(_ => DocumentIsProjected(OneProjection))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void ProjectMany()
+        {
+            this.Given(_ => RepositoryContains(AllDocuments))
+                .When(_ => RepositoryProjectsMany(
+                    d => d.Version.Equals(OneDocument.Version),
+                    d => new TestProjection
+                    {
+                        Id = d.Id,
+                        Name = d.Name,
+                        Version = d.Version
+                    }))
+                .Then(_ => DocumentsAreProjected(AllProjections))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void ReadPaginated()
+        {
+            this.Given(_ => RepositoryContains(AllDocuments))
+                .When(_ => RepositoryRetrievesPaginated(
+                    doc => doc.Version.Equals(OneDocument.Version), 0, 2))
+                .Then(_ => RepositoryHas(AllDocuments.Take(2)))
+                .BDDfy();
+        }
+
         #endregion
 
         #region Update
@@ -180,52 +222,6 @@ namespace Bubbio.Repository.MongoDb.Tests
                 .When(_ => RepositoryDeletesMany(d => d.Version.Equals(OneDocument.Version)))
                 .Then(_ => RepositoryDeleted(AllDocuments.Count))
                 .And(_ => RepositoryHas(0))
-                .BDDfy();
-        }
-
-        #endregion
-
-        #region Project
-
-        [Fact]
-        public void ProjectOne()
-        {
-            this.Given(_ => RepositoryContains(OneDocument))
-                .When(_ => RepositoryProjectsOne(
-                    d => d.Id.Equals(OneDocument.Id),
-                    d => new TestProjection
-                    {
-                        Id = d.Id,
-                        Name = d.Name,
-                        Version = d.Version
-                    }))
-                .Then(_ => DocumentIsProjected(OneProjection))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void ProjectMany()
-        {
-            this.Given(_ => RepositoryContains(AllDocuments))
-                .When(_ => RepositoryProjectsMany(
-                    d => d.Version.Equals(OneDocument.Version),
-                    d => new TestProjection
-                    {
-                        Id = d.Id,
-                        Name = d.Name,
-                        Version = d.Version
-                    }))
-                .Then(_ => DocumentsAreProjected(AllProjections))
-                .BDDfy();
-        }
-
-        [Fact]
-        public void ReadPaginated()
-        {
-            this.Given(_ => RepositoryContains(AllDocuments))
-                .When(_ => RepositoryRetrievesPaginated(
-                    doc => doc.Version.Equals(OneDocument.Version), 0, 2))
-                .Then(_ => RepositoryHas(AllDocuments.Take(2)))
                 .BDDfy();
         }
 

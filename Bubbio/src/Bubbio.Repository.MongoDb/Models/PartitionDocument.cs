@@ -1,4 +1,5 @@
 ﻿using System;
+using Bubbio.Core.Repository;
 
 namespace Bubbio.Repository.MongoDb.Models
 {

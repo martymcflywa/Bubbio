@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Bubbio.Core.Repository;
 using Bubbio.Repository.MongoDb.Interfaces;
-using Bubbio.Repository.MongoDb.Models;
 using FluentAssertions;
 using MongoDB.Driver;
 
@@ -15,12 +15,11 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         where TProject : class
     {
         private readonly IMongoDbContext _dbContext;
-        private readonly IMongoDbRepository _repository;
+        private readonly IRepository _repository;
         private readonly MongoUrl _url = new MongoUrl("mongodb://localhost/test");
 
         private TDocument _document;
         private IEnumerable<TDocument> _documents;
-        private IFindFluent<TDocument, TDocument> _cursor;
         private TProject _projectedDocument;
         private IEnumerable<TProject> _projectedDocuments;
         private bool _foundAny;
@@ -47,10 +46,15 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
             _document = await _repository.FindAsync<TDocument, TKey>(filter);
 
         protected async Task RepositoryRetrievesManyByFilter(Expression<Func<TDocument, bool>> filter) =>
-            _documents = await _repository.FindManyAsync<TDocument, TKey>(filter);
+            _documents = await _repository.FindManyAsync<TDocument, TKey>(filter, null);
 
-        protected void RepositoryRetrievesCursor(Expression<Func<TDocument, bool>> filter) =>
-            _cursor = _repository.GetCursor<TDocument, TKey>(filter);
+        protected async Task RepositoryRetrievesPaginated(
+            Expression<Func<TDocument, bool>> filter,
+            int skip,
+            int take)
+        {
+            _documents = await _repository.FindManyAsync<TDocument, TKey>(filter, skip, take);
+        }
 
         protected async Task RepositoryRetrievesAny(Expression<Func<TDocument, bool>> filter) =>
             _foundAny = await _repository.AnyAsync<TDocument, TKey>(filter);
@@ -60,6 +64,22 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
 
         protected async Task<long> RepositoryRetrievesCountForCollection() =>
             await _repository.CountAsync<TDocument, TKey>();
+
+        protected async Task RepositoryProjectsOne(
+            Expression<Func<TDocument, bool>> filter,
+            Expression<Func<TDocument, TProject>> projection)
+        {
+            _projectedDocument = await _repository.ProjectOneAsync<TDocument, TKey, TProject>(
+                filter, projection);
+        }
+
+        protected async Task RepositoryProjectsMany(
+            Expression<Func<TDocument, bool>> filter,
+            Expression<Func<TDocument, TProject>> projection)
+        {
+            _projectedDocuments = await _repository.ProjectManyAsync<TDocument, TKey, TProject>(
+                filter, projection);
+        }
 
         #endregion
 
@@ -133,38 +153,6 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         protected async Task RepositoryDeletesMany(Expression<Func<TDocument, bool>> filter)
         {
             _deleted = await _repository.DeleteManyAsync<TDocument, TKey>(filter);
-        }
-
-        #endregion
-
-        #region Project
-
-        protected async Task RepositoryProjectsOne(
-            Expression<Func<TDocument, bool>> filter,
-            Expression<Func<TDocument, TProject>> projection)
-        {
-            _projectedDocument = await _repository.ProjectOneAsync<TDocument, TKey, TProject>(
-                filter, projection);
-        }
-
-        protected async Task RepositoryProjectsMany(
-            Expression<Func<TDocument, bool>> filter,
-            Expression<Func<TDocument, TProject>> projection)
-        {
-            _projectedDocuments = await _repository.ProjectManyAsync<TDocument, TKey, TProject>(
-                filter, projection);
-        }
-
-        #endregion
-
-        #region Pagination
-
-        protected async Task RepositoryRetrievesPaginated(
-            Expression<Func<TDocument, bool>> filter,
-            int skip,
-            int take)
-        {
-            _documents = await _repository.GetPaginatedAsync<TDocument, TKey>(filter, skip, take);
         }
 
         #endregion

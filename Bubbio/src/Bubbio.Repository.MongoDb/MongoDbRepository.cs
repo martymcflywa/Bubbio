@@ -5,17 +5,20 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Bubbio.Core.Helpers;
+using Bubbio.Core.Repository;
 using Bubbio.Repository.MongoDb.Interfaces;
-using Bubbio.Repository.MongoDb.Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Bubbio.Repository.MongoDb
 {
-    public class MongoDbRepository : IMongoDbRepository
+    /// <inheritdoc cref="IRepository" />
+    /// <inheritdoc cref="IRepositoryHelper" />
+    /// <summary>
+    /// Implementation of IRepository for MongoDb.
+    /// </summary>
+    public class MongoDbRepository : IRepository, IRepositoryHelper
     {
-        public string ConnectionString { get; set; }
-        public string DatabaseName { get; set; }
         private readonly IMongoDbContext _dbContext;
 
         #region Constructors
@@ -52,7 +55,7 @@ namespace Bubbio.Repository.MongoDb
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            return await HandlePartition<TDocument, TKey>(partitionKey)
+            return await GetCollection<TDocument, TKey>(partitionKey)
                 .Find(doc => doc.Id.Equals(id))
                 .FirstOrDefaultAsync(token);
         }
@@ -65,7 +68,7 @@ namespace Bubbio.Repository.MongoDb
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            return await HandlePartition<TDocument, TKey>(partitionKey)
+            return await GetCollection<TDocument, TKey>(partitionKey)
                 .Find(filter)
                 .FirstOrDefaultAsync(token);
         }
@@ -78,21 +81,26 @@ namespace Bubbio.Repository.MongoDb
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            return await HandlePartition<TDocument, TKey>(partitionKey)
+            return await GetCollection<TDocument, TKey>(partitionKey)
                 .Find(filter)
                 .ToListAsync(token);
         }
 
         /// <inheritdoc />
-        public IFindFluent<TDocument, TDocument> GetCursor<TDocument, TKey>(
+        public async Task<IEnumerable<TDocument>> FindManyAsync<TDocument, TKey>(
                 Expression<Func<TDocument, bool>> filter,
+                int skip = 0,
+                int take = 50,
                 string partitionKey = null,
                 CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            return HandlePartition<TDocument, TKey>(partitionKey)
-                .Find(filter);
+            return await GetCollection<TDocument, TKey>(partitionKey)
+                .Find(filter)
+                .Skip(skip)
+                .Limit(take)
+                .ToListAsync(token);
         }
 
         /// <inheritdoc />
@@ -103,7 +111,7 @@ namespace Bubbio.Repository.MongoDb
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            return await HandlePartition<TDocument, TKey>(partitionKey)
+            return await GetCollection<TDocument, TKey>(partitionKey)
                        .CountDocumentsAsync(filter, cancellationToken: token) > 0;
         }
 
@@ -115,7 +123,7 @@ namespace Bubbio.Repository.MongoDb
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            return await HandlePartition<TDocument, TKey>(partitionKey)
+            return await GetCollection<TDocument, TKey>(partitionKey)
                 .CountDocumentsAsync(filter, cancellationToken: token);
         }
 
@@ -126,8 +134,40 @@ namespace Bubbio.Repository.MongoDb
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            return await HandlePartition<TDocument, TKey>(partitionKey)
+            return await GetCollection<TDocument, TKey>(partitionKey)
                 .CountDocumentsAsync(new BsonDocument(), cancellationToken: token);
+        }
+
+        /// <inheritdoc />
+        public async Task<TProject> ProjectOneAsync<TDocument, TKey, TProject>(
+            Expression<Func<TDocument, bool>> filter,
+            Expression<Func<TDocument, TProject>> projection,
+            string partitionKey = null,
+            CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>
+            where TProject : class
+        {
+            return await GetCollection<TDocument, TKey>(partitionKey)
+                .Find(filter)
+                .Project(projection)
+                .FirstOrDefaultAsync(token);
+        }
+
+        /// <inheritdoc />
+        public async Task<IEnumerable<TProject>> ProjectManyAsync<TDocument, TKey, TProject>(
+            Expression<Func<TDocument, bool>> filter,
+            Expression<Func<TDocument, TProject>> projection,
+            string partitionKey = null,
+            CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>
+            where TProject : class
+        {
+            return await GetCollection<TDocument, TKey>(partitionKey)
+                .Find(filter)
+                .Project(projection)
+                .ToListAsync(token);
         }
 
         #endregion
@@ -139,7 +179,7 @@ namespace Bubbio.Repository.MongoDb
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            await HandlePartition<TDocument, TKey>(document)
+            await GetCollection<TDocument, TKey>(document)
                 .InsertOneAsync(document, cancellationToken: token);
         }
 
@@ -153,7 +193,7 @@ namespace Bubbio.Repository.MongoDb
             if (!enumerable.Any())
                 return;
 
-            await HandlePartition<TDocument, TKey>(enumerable.FirstOrDefault())
+            await GetCollection<TDocument, TKey>(enumerable.FirstOrDefault())
                 .InsertManyAsync(enumerable, cancellationToken: token);
         }
 
@@ -168,7 +208,7 @@ namespace Bubbio.Repository.MongoDb
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            var result = await HandlePartition<TDocument, TKey>(updated)
+            var result = await GetCollection<TDocument, TKey>(updated)
                 .ReplaceOneAsync(
                     d => d.Id.Equals(updated.Id),
                     updated,
@@ -181,14 +221,14 @@ namespace Bubbio.Repository.MongoDb
         /// <inheritdoc />
         public async Task<bool> UpdateOneAsync<TDocument, TKey, TField>(
                 TDocument toUpdate,
-                Expression<Func<TDocument, TField>> field,
+                Expression<Func<TDocument, TField>> selector,
                 TField value,
                 CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            var task = Builders<TDocument>.Update.Set(field, value);
-            var result = await HandlePartition<TDocument, TKey>(toUpdate)
+            var task = Builders<TDocument>.Update.Set(selector, value);
+            var result = await GetCollection<TDocument, TKey>(toUpdate)
                 .UpdateOneAsync(d => d.Id.Equals(toUpdate.Id), task, cancellationToken: token);
 
             return result.ModifiedCount.Equals(1);
@@ -197,15 +237,15 @@ namespace Bubbio.Repository.MongoDb
         /// <inheritdoc />
         public async Task<bool> UpdateOneAsync<TDocument, TKey, TField>(
                 Expression<Func<TDocument, bool>> filter,
-                Expression<Func<TDocument, TField>> field,
+                Expression<Func<TDocument, TField>> selector,
                 TField value,
                 string partitionKey = null,
                 CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            var task = Builders<TDocument>.Update.Set(field, value);
-            var result = await HandlePartition<TDocument, TKey>(partitionKey)
+            var task = Builders<TDocument>.Update.Set(selector, value);
+            var result = await GetCollection<TDocument, TKey>(partitionKey)
                 .UpdateOneAsync(filter, task, cancellationToken: token);
 
             return result.ModifiedCount.Equals(1);
@@ -222,7 +262,7 @@ namespace Bubbio.Repository.MongoDb
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            return (await HandlePartition<TDocument, TKey>(document)
+            return (await GetCollection<TDocument, TKey>(document)
                     .DeleteOneAsync(d => d.Id.Equals(document.Id), token))
                 .DeletedCount;
         }
@@ -235,7 +275,7 @@ namespace Bubbio.Repository.MongoDb
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            return (await HandlePartition<TDocument, TKey>(partitionKey)
+            return (await GetCollection<TDocument, TKey>(partitionKey)
                     .DeleteOneAsync(filter, token))
                 .DeletedCount;
         }
@@ -252,7 +292,7 @@ namespace Bubbio.Repository.MongoDb
                 return 0;
 
             var idsToDelete = enumerable.Select(d => d.Id).ToList();
-            return (await HandlePartition<TDocument, TKey>(enumerable.FirstOrDefault())
+            return (await GetCollection<TDocument, TKey>(enumerable.FirstOrDefault())
                     .DeleteManyAsync(d => idsToDelete.Contains(d.Id), token))
                 .DeletedCount;
         }
@@ -260,113 +300,38 @@ namespace Bubbio.Repository.MongoDb
         /// <inheritdoc />
         public async Task<long> DeleteManyAsync<TDocument, TKey>(Expression<Func<TDocument, bool>> filter, string partitionKey = null, CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey>
         {
-            return (await HandlePartition<TDocument, TKey>(partitionKey)
+            return (await GetCollection<TDocument, TKey>(partitionKey)
                     .DeleteManyAsync(filter, token))
                 .DeletedCount;
         }
 
         #endregion
 
-        #region Projection
+        #region IRepositoryHelper
 
         /// <inheritdoc />
-        public async Task<TProject> ProjectOneAsync<TDocument, TKey, TProject>(
-                Expression<Func<TDocument, bool>> filter,
-                Expression<Func<TDocument, TProject>> projection,
-                string partitionKey = null,
-                CancellationToken token = default)
-            where TDocument : IDocument<TKey>
-            where TKey : IEquatable<TKey>
-            where TProject : class
-        {
-            return await HandlePartition<TDocument, TKey>(partitionKey)
-                .Find(filter)
-                .Project(projection)
-                .FirstOrDefaultAsync(token);
-        }
-
-        /// <inheritdoc />
-        public async Task<IEnumerable<TProject>> ProjectManyAsync<TDocument, TKey, TProject>(
-                Expression<Func<TDocument, bool>> filter,
-                Expression<Func<TDocument, TProject>> projection,
-                string partitionKey = null,
-                CancellationToken token = default)
-            where TDocument : IDocument<TKey>
-            where TKey : IEquatable<TKey>
-            where TProject : class
-        {
-            return await HandlePartition<TDocument, TKey>(partitionKey)
-                .Find(filter)
-                .Project(projection)
-                .ToListAsync(token);
-        }
-
-        #endregion
-
-        #region Pagination
-
-        /// <inheritdoc />
-        public async Task<IEnumerable<TDocument>> GetPaginatedAsync<TDocument, TKey>(
-                Expression<Func<TDocument, bool>> filter,
-                int skip = 0,
-                int take = 50,
-                string partitionKey = null,
-                CancellationToken token = default)
-            where TDocument : IDocument<TKey>
-            where TKey : IEquatable<TKey>
-        {
-            return await HandlePartition<TDocument, TKey>(partitionKey)
-                .Find(filter)
-                .Skip(skip)
-                .Limit(take)
-                .ToListAsync(token);
-        }
-
-        #endregion
-
-        #region Grouping
-
-        /// <inheritdoc />
-        public async Task<IEnumerable<TProject>> GroupByAsync<TDocument, TKey, TGroup, TProject>(Expression<Func<TDocument, TGroup>> selector, Expression<Func<IGrouping<TGroup, TDocument>, TProject>> projection,
-            string partitionKey = null, CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey> where TProject : class, new()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <inheritdoc />
-        public async Task<IEnumerable<TProject>> GroupByAsync<TDocument, TKey, TGroup, TProject>(Expression<Func<TDocument, bool>> filter, Expression<Func<TDocument, TGroup>> selector, Expression<Func<IGrouping<TGroup, TDocument>, TProject>> projection,
-            string partitionKey = null, CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey> where TProject : class, new()
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion
-
-        #region Utility
-
-        /// <inheritdoc />
-        public IMongoCollection<TDocument> HandlePartition<TDocument, TKey>(string partitionKey = null)
+        public IMongoCollection<TDocument> GetCollection<TDocument, TKey>(string partitionKey = null)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
             return partitionKey.IsEmpty()
-                ? GetCollection<TDocument, TKey>()
-                : GetCollection<TDocument, TKey>(partitionKey);
+                ? ResolvePartition<TDocument, TKey>()
+                : ResolvePartition<TDocument, TKey>(partitionKey);
         }
 
         /// <inheritdoc />
-        public IMongoCollection<TDocument> HandlePartition<TDocument, TKey>(TDocument document)
+        public IMongoCollection<TDocument> GetCollection<TDocument, TKey>(TDocument document)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
             if (document is IPartitionDocument<TKey> partitionedDocument)
-                return GetCollection<TDocument, TKey>(partitionedDocument.PartitionKey);
+                return ResolvePartition<TDocument, TKey>(partitionedDocument.PartitionKey);
 
-            return GetCollection<TDocument, TKey>();
+            return ResolvePartition<TDocument, TKey>();
         }
 
         /// <inheritdoc />
-        public IMongoCollection<TDocument> GetCollection<TDocument, TKey>(string partitionKey = null)
+        public IMongoCollection<TDocument> ResolvePartition<TDocument, TKey>(string partitionKey = null)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {

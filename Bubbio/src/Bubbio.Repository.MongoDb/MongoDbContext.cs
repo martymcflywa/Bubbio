@@ -4,9 +4,9 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Bubbio.Core.Helpers;
+using Bubbio.Core.Repository;
 using Bubbio.Repository.MongoDb.Attributes;
 using Bubbio.Repository.MongoDb.Interfaces;
-using Bubbio.Repository.MongoDb.Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -93,8 +93,8 @@ namespace Bubbio.Repository.MongoDb
         /// <summary>
         /// Get collection name from attribute.
         /// </summary>
-        /// <typeparam name="TDocument">The type of document.</typeparam>
-        /// <typeparam name="TKey">The type of primary key.</typeparam>
+        /// <typeparam name="TDocument">The document type.</typeparam>
+        /// <typeparam name="TKey">The primary key type.</typeparam>
         /// <returns></returns>
         private static string GetCollectionName<TDocument, TKey>()
             where TDocument : IDocument<TKey>

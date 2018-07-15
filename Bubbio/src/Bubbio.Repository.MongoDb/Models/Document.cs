@@ -1,4 +1,5 @@
 ﻿using System;
+using Bubbio.Core.Repository;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -8,7 +9,7 @@ namespace Bubbio.Repository.MongoDb.Models
     /// <summary>
     /// Default basic document implementation, uses Guid as Id type.
     /// </summary>
-    public class Document : IDocument
+    public class Document : IDocument<Guid>
     {
         /// <inheritdoc />
         /// <summary>
