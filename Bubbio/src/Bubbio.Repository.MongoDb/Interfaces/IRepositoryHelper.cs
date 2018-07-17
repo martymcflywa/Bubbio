@@ -1,5 +1,5 @@
 ﻿using System;
-using Bubbio.Core.Repository;
+using Bubbio.Repository.Core.Interfaces;
 using MongoDB.Driver;
 
 namespace Bubbio.Repository.MongoDb.Interfaces

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bubbio.Repository.MongoDb.Attributes
+namespace Bubbio.Repository.Core.Attributes
 {
     /// <inheritdoc />
     /// <summary>
@@ -9,7 +9,11 @@ namespace Bubbio.Repository.MongoDb.Attributes
     [AttributeUsage(AttributeTargets.Class)]
     public class CollectionName : Attribute
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = "Bubbio";
+
+        public CollectionName()
+        {
+        }
 
         public CollectionName(string name)
         {

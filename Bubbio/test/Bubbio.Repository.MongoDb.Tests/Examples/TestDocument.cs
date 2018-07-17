@@ -1,6 +1,6 @@
 ﻿using System;
-using Bubbio.Core.Repository;
-using Bubbio.Repository.MongoDb.Attributes;
+using Bubbio.Repository.Core.Attributes;
+using Bubbio.Repository.Core.Interfaces;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -14,9 +14,13 @@ namespace Bubbio.Repository.MongoDb.Tests.Examples
     {
         [BsonId]
         public Guid Id { get; set; }
+        [BsonRepresentation(BsonType.String)]
+        public DateTimeOffset Created { get; set; }
+        [BsonRepresentation(BsonType.String)]
+        public DateTimeOffset Modified { get; set; }
         public int Version { get; set; }
-        public string Name { get; set; }
 
+        public string Name { get; set; }
         [BsonRepresentation(BsonType.String)]
         public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.UtcNow;
     }

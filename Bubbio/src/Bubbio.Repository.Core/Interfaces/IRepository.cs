@@ -1,4 +1,4 @@
-﻿namespace Bubbio.Core.Repository
+﻿namespace Bubbio.Repository.Core.Interfaces
 {
     /// <summary>
     /// Expose repository read and mutate operations.

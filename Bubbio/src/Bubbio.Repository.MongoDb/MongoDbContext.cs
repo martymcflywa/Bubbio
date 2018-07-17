@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using Bubbio.Core.Helpers;
-using Bubbio.Core.Repository;
-using Bubbio.Repository.MongoDb.Attributes;
+using Bubbio.Repository.Core.Attributes;
+using Bubbio.Repository.Core.Interfaces;
 using Bubbio.Repository.MongoDb.Interfaces;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -63,23 +61,9 @@ namespace Bubbio.Repository.MongoDb
             var collectionName = GetCollectionName<TDocument, TKey>();
 
             return _database.GetCollection<TDocument>(
-                partitionKey.IsEmpty() ?
-                    collectionName : $"{partitionKey}-{collectionName}");
-        }
-
-        /// <inheritdoc />
-        public async Task DropCollectionAsync<TDocument, TKey>(
-                string partitionKey = null,
-                CancellationToken token = default)
-            where TDocument : IDocument<TKey>
-            where TKey : IEquatable<TKey>
-        {
-            var collectionName = GetCollectionName<TDocument, TKey>();
-
-            if (partitionKey.IsEmpty())
-                await _database.DropCollectionAsync(collectionName, token);
-
-            await _database.DropCollectionAsync($"{partitionKey}-{collectionName}", token);
+                partitionKey.IsEmpty()
+                    ? collectionName
+                    : $"{collectionName}-{partitionKey}");
         }
 
         /// <inheritdoc />

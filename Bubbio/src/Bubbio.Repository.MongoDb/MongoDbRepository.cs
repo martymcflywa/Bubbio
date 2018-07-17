@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Bubbio.Core.Helpers;
-using Bubbio.Core.Repository;
+using Bubbio.Repository.Core.Interfaces;
 using Bubbio.Repository.MongoDb.Interfaces;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -303,6 +303,17 @@ namespace Bubbio.Repository.MongoDb
             return (await GetCollection<TDocument, TKey>(partitionKey)
                     .DeleteManyAsync(filter, token))
                 .DeletedCount;
+        }
+
+        /// <inheritdoc />
+        public async Task DropCollectionAsync<TDocument, TKey>(
+                string partitionKey = null,
+                CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>
+        {
+            var collection = GetCollection<TDocument, TKey>(partitionKey);
+            await collection.Database.DropCollectionAsync(collection.CollectionNamespace.CollectionName, token);
         }
 
         #endregion

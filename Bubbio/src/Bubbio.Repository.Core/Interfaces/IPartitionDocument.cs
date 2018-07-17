@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bubbio.Core.Repository
+namespace Bubbio.Repository.Core.Interfaces
 {
     /// <inheritdoc />
     /// <summary>

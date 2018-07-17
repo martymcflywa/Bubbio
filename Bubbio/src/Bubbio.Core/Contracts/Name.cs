@@ -1,4 +1,6 @@
-﻿namespace Bubbio.Core.Contracts
+﻿using Bubbio.Core.Helpers;
+
+namespace Bubbio.Core.Contracts
 {
     public class Name : IName
     {
@@ -8,7 +10,9 @@
 
         public override string ToString()
         {
-            return $"{First} {Middle} {Last}";
+            return Middle.IsEmpty()
+                ? $"{First} {Last}"
+                : $"{First} {Middle} {Last}";
         }
     }
 }

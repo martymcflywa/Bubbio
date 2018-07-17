@@ -2,6 +2,6 @@
 {
     public interface IBottleFeed : IEvent
     {
-        long Amount { get; set; }
+        float Amount { get; set; }
     }
 }

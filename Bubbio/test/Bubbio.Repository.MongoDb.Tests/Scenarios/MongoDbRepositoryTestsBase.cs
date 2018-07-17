@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Bubbio.Core.Repository;
-using Bubbio.Repository.MongoDb.Interfaces;
+using Bubbio.Repository.Core.Interfaces;
 using FluentAssertions;
 using MongoDB.Driver;
 
@@ -14,7 +13,6 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         where TKey : IEquatable<TKey>
         where TProject : class
     {
-        private readonly IMongoDbContext _dbContext;
         private readonly IRepository _repository;
         private readonly MongoUrl _url = new MongoUrl("mongodb://localhost/test");
 
@@ -28,13 +26,12 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
 
         protected MongoDbRepositoryTestsBase()
         {
-            _dbContext = new MongoDbContext(_url);
-            _repository = new MongoDbRepository(_dbContext);
+            _repository = new MongoDbRepository(new MongoDbContext(_url));
         }
 
         protected async Task RepositoryIsEmpty()
         {
-            await _dbContext.DropCollectionAsync<TDocument, TKey>();
+            await _repository.DropCollectionAsync<TDocument, TKey>();
         }
 
         #region Read
@@ -62,7 +59,7 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         protected async Task RepositoryRetrievesCountByFilter(Expression<Func<TDocument, bool>> filter) =>
             _count = await _repository.CountAsync<TDocument, TKey>(filter);
 
-        protected async Task<long> RepositoryRetrievesCountForCollection() =>
+        private async Task<long> RepositoryRetrievesCountForCollection() =>
             await _repository.CountAsync<TDocument, TKey>();
 
         protected async Task RepositoryProjectsOne(

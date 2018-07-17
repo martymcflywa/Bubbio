@@ -4,117 +4,28 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Bubbio.Core.Repository
+namespace Bubbio.Repository.Core.Interfaces
 {
-    public interface IMutateRepository
+    public interface IReadRepository
     {
-        #region Create
-
         /// <summary>
-        /// Async add one document to the collection.
+        /// Async find one document by its primary key.
         /// </summary>
-        /// <param name="document">The document to add.</param>
-        /// <param name="token">Optional cancellation token.</param>
-        /// <typeparam name="TDocument">The document type.</typeparam>
-        /// <typeparam name="TKey">The primary key type.</typeparam>
-        /// <returns></returns>
-        Task AddAsync<TDocument, TKey>(
-                TDocument document,
-                CancellationToken token = default)
-            where TDocument : IDocument<TKey>
-            where TKey : IEquatable<TKey>;
-
-        /// <summary>
-        /// Async add many documents to the collection.
-        /// </summary>
-        /// <param name="documents">The documents to add.</param>
-        /// <param name="token">Optional cancellation token.</param>
-        /// <typeparam name="TDocument">The document type.</typeparam>
-        /// <typeparam name="TKey">The primary key type.</typeparam>
-        /// <returns></returns>
-        Task AddAsync<TDocument, TKey>(
-                IEnumerable<TDocument> documents,
-                CancellationToken token = default)
-            where TDocument : IDocument<TKey>
-            where TKey : IEquatable<TKey>;
-
-        #endregion
-
-        #region Update
-
-        /// <summary>
-        /// Async update one document in the collection.
-        /// </summary>
-        /// <param name="updated">The updated document.</param>
-        /// <param name="token">Optional cancellation token.</param>
-        /// <typeparam name="TDocument">The document type.</typeparam>
-        /// <typeparam name="TKey">The primary key type.</typeparam>
-        /// <returns></returns>
-        Task<bool> UpdateOneAsync<TDocument, TKey>(
-                TDocument updated,
-                CancellationToken token = default)
-            where TDocument : IDocument<TKey>
-            where TKey : IEquatable<TKey>;
-
-        /// <summary>
-        /// Async update one document by updating the selected field with a given value.
-        /// </summary>
-        /// <param name="toUpdate">The document to update.</param>
-        /// <param name="selector">The linq expression field selector.</param>
-        /// <param name="value">The new value of selected field.</param>
-        /// <param name="token">Optional cancellation token.</param>
-        /// <typeparam name="TDocument">The document type.</typeparam>
-        /// <typeparam name="TKey">The primary key type.</typeparam>
-        /// <typeparam name="TField">The field type.</typeparam>
-        /// <returns></returns>
-        Task<bool> UpdateOneAsync<TDocument, TKey, TField>(
-                TDocument toUpdate,
-                Expression<Func<TDocument, TField>> selector,
-                TField value,
-                CancellationToken token = default)
-            where TDocument : IDocument<TKey>
-            where TKey : IEquatable<TKey>;
-
-        /// <summary>
-        /// Async update one document by a linq predicate filter, updating the selected
-        /// field with a given value.
-        /// </summary>
-        /// <param name="filter">The linq predicate filter.</param>
-        /// <param name="selector">The linq expression field selector.</param>
-        /// <param name="value">The new value of selected field.</param>
+        /// <param name="id">The primary key to find.</param>
         /// <param name="partitionKey">Optional partition key.</param>
         /// <param name="token">Optional cancellation token.</param>
         /// <typeparam name="TDocument">The document type.</typeparam>
         /// <typeparam name="TKey">The primary key type.</typeparam>
-        /// <typeparam name="TField">The field type.</typeparam>
         /// <returns></returns>
-        Task<bool> UpdateOneAsync<TDocument, TKey, TField>(
-                Expression<Func<TDocument, bool>> filter,
-                Expression<Func<TDocument, TField>> selector,
-                TField value,
+        Task<TDocument> FindAsync<TDocument, TKey>(
+                TKey id,
                 string partitionKey = null,
                 CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>;
 
-        #endregion
-
-        #region Delete
-
         /// <summary>
-        /// Async delete one document.
-        /// </summary>
-        /// <param name="document">The document to delete.</param>
-        /// <param name="token">Optional cancellation token.</param>
-        /// <typeparam name="TDocument">The document type.</typeparam>
-        /// <typeparam name="TKey">The primary key type.</typeparam>
-        /// <returns></returns>
-        Task<long> DeleteOneAsync<TDocument, TKey>(TDocument document, CancellationToken token = default)
-            where TDocument : IDocument<TKey>
-            where TKey : IEquatable<TKey>;
-
-        /// <summary>
-        /// Async delete one document by a linq predicate filter.
+        /// Async find one document by a linq predicate filter.
         /// </summary>
         /// <param name="filter">The linq predicate filter.</param>
         /// <param name="partitionKey">Optional partition key.</param>
@@ -122,7 +33,7 @@ namespace Bubbio.Core.Repository
         /// <typeparam name="TDocument">The document type.</typeparam>
         /// <typeparam name="TKey">The primary key type.</typeparam>
         /// <returns></returns>
-        Task<long> DeleteOneAsync<TDocument, TKey>(
+        Task<TDocument> FindAsync<TDocument, TKey>(
                 Expression<Func<TDocument, bool>> filter,
                 string partitionKey = null,
                 CancellationToken token = default)
@@ -130,21 +41,7 @@ namespace Bubbio.Core.Repository
             where TKey : IEquatable<TKey>;
 
         /// <summary>
-        /// Async delete many documents.
-        /// </summary>
-        /// <param name="documents">The documents to delete.</param>
-        /// <param name="token">Optional cancellation token.</param>
-        /// <typeparam name="TDocument">The document type.</typeparam>
-        /// <typeparam name="TKey">The primary key type.</typeparam>
-        /// <returns></returns>
-        Task<long> DeleteManyAsync<TDocument, TKey>(
-                IEnumerable<TDocument> documents,
-                CancellationToken token = default)
-            where TDocument : IDocument<TKey>
-            where TKey : IEquatable<TKey>;
-
-        /// <summary>
-        /// Async delete many documents by a linq predicate filter.
+        /// Async find many documents by a linq predicate filter.
         /// </summary>
         /// <param name="filter">The linq predicate filter.</param>
         /// <param name="partitionKey">Optional partition key.</param>
@@ -152,13 +49,120 @@ namespace Bubbio.Core.Repository
         /// <typeparam name="TDocument">The document type.</typeparam>
         /// <typeparam name="TKey">The primary key type.</typeparam>
         /// <returns></returns>
-        Task<long> DeleteManyAsync<TDocument, TKey>(
+        Task<IEnumerable<TDocument>> FindManyAsync<TDocument, TKey>(
                 Expression<Func<TDocument, bool>> filter,
                 string partitionKey = null,
                 CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>;
 
-        #endregion
+        /// <summary>
+        /// Async find many paginated documents by a linq predicate filter.
+        /// </summary>
+        /// <param name="filter">The linq predicate filter.</param>
+        /// <param name="skip">Number of documents to skip, default is 0.</param>
+        /// <param name="take">Number of documents in page, default is 50.</param>
+        /// <param name="partitionKey">Optional partition key.</param>
+        /// <param name="token">Optional cancellation token.</param>
+        /// <typeparam name="TDocument">The document type.</typeparam>
+        /// <typeparam name="TKey">The primary key type.</typeparam>
+        /// <returns></returns>
+        Task<IEnumerable<TDocument>> FindManyAsync<TDocument, TKey>(
+            Expression<Func<TDocument, bool>> filter,
+            int skip = 0,
+            int take = 50,
+            string partitionKey = null,
+            CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>;
+
+        /// <summary>
+        /// Async true if any documents found by a linq predicate filter.
+        /// </summary>
+        /// <param name="filter">The linq predicate filter.</param>
+        /// <param name="partitionKey">Optional partition key.</param>
+        /// <param name="token">Optional cancellation token.</param>
+        /// <typeparam name="TDocument">The document type.</typeparam>
+        /// <typeparam name="TKey">The primary key type.</typeparam>
+        /// <returns></returns>
+        Task<bool> AnyAsync<TDocument, TKey>(
+                Expression<Func<TDocument, bool>> filter,
+                string partitionKey = null,
+                CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>;
+
+        /// <summary>
+        /// Async count of documents in the collection.
+        /// Limited to partition, if partition key is provided.
+        /// </summary>
+        /// <param name="partitionKey"></param>
+        /// <param name="token"></param>
+        /// <typeparam name="TDocument"></typeparam>
+        /// <typeparam name="TKey"></typeparam>
+        /// <returns></returns>
+        Task<long> CountAsync<TDocument, TKey>(
+                string partitionKey = null,
+                CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>;
+
+        /// <summary>
+        /// Async count of documents found by a linq predicate filter.
+        /// </summary>
+        /// <param name="filter">The linq predicate filter.</param>
+        /// <param name="partitionKey">Optional partition key.</param>
+        /// <param name="token">Optional cancellation token.</param>
+        /// <typeparam name="TDocument">The document type.</typeparam>
+        /// <typeparam name="TKey">The primary key type.</typeparam>
+        /// <returns></returns>
+        Task<long> CountAsync<TDocument, TKey>(
+                Expression<Func<TDocument, bool>> filter,
+                string partitionKey = null,
+                CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>;
+
+        /// <summary>
+        /// Async project one document by a linq predicate filter,
+        /// projecting it to another type.
+        /// </summary>
+        /// <param name="filter">The linq predicate filter.</param>
+        /// <param name="projection">The linq projection expression.</param>
+        /// <param name="partitionKey">Optional partition key.</param>
+        /// <param name="token">Optional cancellation token.</param>
+        /// <typeparam name="TDocument">The document type.</typeparam>
+        /// <typeparam name="TKey">The primary key type.</typeparam>
+        /// <typeparam name="TProject">The projection type.</typeparam>
+        /// <returns></returns>
+        Task<TProject> ProjectOneAsync<TDocument, TKey, TProject>(
+                Expression<Func<TDocument, bool>> filter,
+                Expression<Func<TDocument, TProject>> projection,
+                string partitionKey = null,
+                CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>
+            where TProject : class;
+
+        /// <summary>
+        /// Async project many documents by a linq predicate filter,
+        /// projecting them to another type.
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <param name="projection"></param>
+        /// <param name="partitionKey"></param>
+        /// <param name="token"></param>
+        /// <typeparam name="TDocument"></typeparam>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TProject"></typeparam>
+        /// <returns></returns>
+        Task<IEnumerable<TProject>> ProjectManyAsync<TDocument, TKey, TProject>(
+                Expression<Func<TDocument, bool>> filter,
+                Expression<Func<TDocument, TProject>> projection,
+                string partitionKey = null,
+                CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>
+            where TProject : class;
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bubbio.Core.Repository
+namespace Bubbio.Repository.Core.Interfaces
 {
     /// <summary>
     /// A generic document to be stored in a database.
@@ -13,6 +13,17 @@ namespace Bubbio.Core.Repository
         /// The primary key.
         /// </summary>
         TKey Id { get; set; }
+
+        /// <summary>
+        /// When the document was created.
+        /// </summary>
+        DateTimeOffset Created { get; set; }
+
+        /// <summary>
+        /// When the document was modified.
+        /// Default value is Created date.
+        /// </summary>
+        DateTimeOffset Modified { get; set; }
 
         /// <summary>
         /// The schema version.
