@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bubbio.Repository.MongoDb.Tests.Examples
+namespace Bubbio.MongoDb.Tests.Examples
 {
     public class TestProjection
     {

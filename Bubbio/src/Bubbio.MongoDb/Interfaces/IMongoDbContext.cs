@@ -3,7 +3,7 @@ using Bubbio.Repository.Core.Interfaces;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
-namespace Bubbio.Repository.MongoDb.Interfaces
+namespace Bubbio.MongoDb.Interfaces
 {
     /// <summary>
     /// Expose database context functionality.

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bubbio.Repository.MongoDb.Tests.Builders;
+using Bubbio.MongoDb.Tests.Builders;
 
-namespace Bubbio.Repository.MongoDb.Tests.Examples
+namespace Bubbio.MongoDb.Tests.Examples
 {
     public class TestDocumentExamples
     {

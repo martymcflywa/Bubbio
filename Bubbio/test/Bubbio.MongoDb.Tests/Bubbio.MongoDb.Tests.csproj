@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <LangVersion>7.2</LangVersion>
     <IsPackable>false</IsPackable>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
@@ -11,7 +11,7 @@
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Bubbio.Repository.MongoDb\Bubbio.Repository.MongoDb.csproj" />
+    <ProjectReference Include="..\..\src\Bubbio.MongoDb\Bubbio.MongoDb.csproj" />
     <ProjectReference Include="..\Bubbio.Tests.Core\Bubbio.Tests.Core.csproj" />
   </ItemGroup>
 </Project>

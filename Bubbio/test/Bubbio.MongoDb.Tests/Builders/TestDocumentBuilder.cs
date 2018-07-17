@@ -1,7 +1,7 @@
 ﻿using System;
-using Bubbio.Repository.MongoDb.Tests.Examples;
+using Bubbio.MongoDb.Tests.Examples;
 
-namespace Bubbio.Repository.MongoDb.Tests.Builders
+namespace Bubbio.MongoDb.Tests.Builders
 {
     public class TestDocumentBuilder
     {

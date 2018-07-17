@@ -4,7 +4,7 @@ using Bubbio.Repository.Core.Interfaces;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace Bubbio.Repository.MongoDb.Tests.Examples
+namespace Bubbio.MongoDb.Tests.Examples
 {
     [Serializable]
     [BsonDiscriminator(Required = true)]

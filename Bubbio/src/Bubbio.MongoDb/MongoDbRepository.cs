@@ -5,12 +5,12 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Bubbio.Core.Helpers;
+using Bubbio.MongoDb.Interfaces;
 using Bubbio.Repository.Core.Interfaces;
-using Bubbio.Repository.MongoDb.Interfaces;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
-namespace Bubbio.Repository.MongoDb
+namespace Bubbio.MongoDb
 {
     /// <inheritdoc cref="IRepository" />
     /// <inheritdoc cref="IRepositoryHelper" />

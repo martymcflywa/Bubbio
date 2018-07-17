@@ -6,7 +6,7 @@ using Bubbio.Repository.Core.Interfaces;
 using FluentAssertions;
 using MongoDB.Driver;
 
-namespace Bubbio.Repository.MongoDb.Tests.Scenarios
+namespace Bubbio.MongoDb.Tests.Scenarios
 {
     public abstract class MongoDbRepositoryTestsBase<TDocument, TKey, TProject>
         where TDocument : IDocument<TKey>

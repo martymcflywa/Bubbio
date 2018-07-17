@@ -2,7 +2,7 @@
 using Bubbio.Repository.Core.Interfaces;
 using MongoDB.Driver;
 
-namespace Bubbio.Repository.MongoDb.Interfaces
+namespace Bubbio.MongoDb.Interfaces
 {
     /// <summary>
     /// Expose helper functionality.

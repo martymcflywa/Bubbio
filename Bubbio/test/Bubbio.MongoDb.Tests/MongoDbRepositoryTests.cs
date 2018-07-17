@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bubbio.Repository.MongoDb.Tests.Examples;
-using Bubbio.Repository.MongoDb.Tests.Scenarios;
+using Bubbio.MongoDb.Tests.Examples;
+using Bubbio.MongoDb.Tests.Scenarios;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Bubbio.Repository.MongoDb.Tests
+namespace Bubbio.MongoDb.Tests
 {
     public class MongoDbRepositoryTests : MongoDbRepositoryTestsBase<TestDocument, Guid, TestProjection>
     {

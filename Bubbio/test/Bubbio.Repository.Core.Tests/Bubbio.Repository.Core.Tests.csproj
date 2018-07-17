@@ -10,8 +10,8 @@
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Bubbio.MongoDb\Bubbio.MongoDb.csproj" />
     <ProjectReference Include="..\..\src\Bubbio.Repository.Core\Bubbio.Repository.Core.csproj" />
-    <ProjectReference Include="..\..\src\Bubbio.Repository.MongoDb\Bubbio.Repository.MongoDb.csproj" />
     <ProjectReference Include="..\Bubbio.Tests.Core\Bubbio.Tests.Core.csproj" />
   </ItemGroup>
 </Project>
