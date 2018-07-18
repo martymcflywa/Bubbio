@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using Bubbio.Core.Attributes;
 using Bubbio.Core.Helpers;
+using Bubbio.Core.Repository;
 using Bubbio.MongoDb.Interfaces;
-using Bubbio.Repository.Core.Attributes;
-using Bubbio.Repository.Core.Interfaces;
 using MongoDB.Bson;
 using MongoDB.Driver;
 

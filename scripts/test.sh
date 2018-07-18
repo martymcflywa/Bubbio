@@ -2,10 +2,10 @@
 set -e
 source ./scripts/env.sh
 
-TESTS_CORE=*Bubbio.Tests.Core
+TEST=*.Tests
 
 for p in $PROJECT/test/**; do
-    if [[ "$p" != $TESTS_CORE ]]; then
+    if [[ "$p" == $TEST ]]; then
         echo "Executing test run for $p";
         dotnet test $p;
     fi

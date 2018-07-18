@@ -1,6 +1,6 @@
 ﻿using System;
-using Bubbio.Repository.Core.Attributes;
-using Bubbio.Repository.Core.Interfaces;
+using Bubbio.Core.Attributes;
+using Bubbio.Core.Repository;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 

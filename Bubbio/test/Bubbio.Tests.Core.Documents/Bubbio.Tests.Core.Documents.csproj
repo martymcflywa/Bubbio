@@ -4,9 +4,6 @@
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Bubbio.Core\Bubbio.Core.csproj" />
+    <ProjectReference Include="..\..\src\Bubbio.MongoDb.Documents\Bubbio.MongoDb.Documents.csproj" />
   </ItemGroup>
 </Project>

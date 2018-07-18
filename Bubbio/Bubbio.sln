@@ -3,21 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Core", "src\Bubbio.Core\Bubbio.Core.csproj", "{112C06A3-C7B1-4B54-B208-87568239289C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Core.Tests", "test\Bubbio.Core.Tests\Bubbio.Core.Tests.csproj", "{2760DB29-8D63-4BF5-AEBD-88BED42266F3}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Domain", "src\Bubbio.Domain\Bubbio.Domain.csproj", "{7B851D25-77C5-4B6C-A34D-7C2DF78A1209}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Domain.Tests", "test\Bubbio.Domain.Tests\Bubbio.Domain.Tests.csproj", "{7D587548-30FC-46B5-A066-25045EF4B0CD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Tests.Core", "test\Bubbio.Tests.Core\Bubbio.Tests.Core.csproj", "{001B3616-EEEF-4519-B85F-AF6F19DF7F71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Repository.Core", "src\Bubbio.Repository.Core\Bubbio.Repository.Core.csproj", "{F1E21580-6D45-4109-8657-3E7593F8A815}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Repository.Core.Tests", "test\Bubbio.Repository.Core.Tests\Bubbio.Repository.Core.Tests.csproj", "{74FF7B6F-4536-497E-967F-63CE4690C523}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.MongoDb", "src\Bubbio.MongoDb\Bubbio.MongoDb.csproj", "{1880DEE9-3CB1-4A31-93E7-97059B386CDF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.MongoDb.Tests", "test\Bubbio.MongoDb.Tests\Bubbio.MongoDb.Tests.csproj", "{BAAA032D-4901-46DE-8E08-E841CB8DD6FF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.MongoDb.Documents", "src\Bubbio.MongoDb.Documents\Bubbio.MongoDb.Documents.csproj", "{649F39BE-036D-4B85-AA92-AD50E870CFE5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Tests.Core.Documents", "test\Bubbio.Tests.Core.Documents\Bubbio.Tests.Core.Documents.csproj", "{1EEF3FC5-0CF9-424B-94FD-1D71FD57FB3C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +27,6 @@ Global
 		{112C06A3-C7B1-4B54-B208-87568239289C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{112C06A3-C7B1-4B54-B208-87568239289C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{112C06A3-C7B1-4B54-B208-87568239289C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2760DB29-8D63-4BF5-AEBD-88BED42266F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2760DB29-8D63-4BF5-AEBD-88BED42266F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2760DB29-8D63-4BF5-AEBD-88BED42266F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2760DB29-8D63-4BF5-AEBD-88BED42266F3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7B851D25-77C5-4B6C-A34D-7C2DF78A1209}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7B851D25-77C5-4B6C-A34D-7C2DF78A1209}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7B851D25-77C5-4B6C-A34D-7C2DF78A1209}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -45,14 +39,6 @@ Global
 		{001B3616-EEEF-4519-B85F-AF6F19DF7F71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{001B3616-EEEF-4519-B85F-AF6F19DF7F71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{001B3616-EEEF-4519-B85F-AF6F19DF7F71}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F1E21580-6D45-4109-8657-3E7593F8A815}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F1E21580-6D45-4109-8657-3E7593F8A815}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F1E21580-6D45-4109-8657-3E7593F8A815}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F1E21580-6D45-4109-8657-3E7593F8A815}.Release|Any CPU.Build.0 = Release|Any CPU
-		{74FF7B6F-4536-497E-967F-63CE4690C523}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{74FF7B6F-4536-497E-967F-63CE4690C523}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{74FF7B6F-4536-497E-967F-63CE4690C523}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{74FF7B6F-4536-497E-967F-63CE4690C523}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1880DEE9-3CB1-4A31-93E7-97059B386CDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1880DEE9-3CB1-4A31-93E7-97059B386CDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1880DEE9-3CB1-4A31-93E7-97059B386CDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -61,5 +47,13 @@ Global
 		{BAAA032D-4901-46DE-8E08-E841CB8DD6FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BAAA032D-4901-46DE-8E08-E841CB8DD6FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BAAA032D-4901-46DE-8E08-E841CB8DD6FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{649F39BE-036D-4B85-AA92-AD50E870CFE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{649F39BE-036D-4B85-AA92-AD50E870CFE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{649F39BE-036D-4B85-AA92-AD50E870CFE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{649F39BE-036D-4B85-AA92-AD50E870CFE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1EEF3FC5-0CF9-424B-94FD-1D71FD57FB3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EEF3FC5-0CF9-424B-94FD-1D71FD57FB3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1EEF3FC5-0CF9-424B-94FD-1D71FD57FB3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1EEF3FC5-0CF9-424B-94FD-1D71FD57FB3C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

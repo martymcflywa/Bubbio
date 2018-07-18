@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Bubbio.Repository.Core.Interfaces;
+using Bubbio.Core.Repository;
 using FluentAssertions;
 using MongoDB.Driver;
 

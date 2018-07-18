@@ -5,8 +5,8 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Bubbio.Core.Helpers;
+using Bubbio.Core.Repository;
 using Bubbio.MongoDb.Interfaces;
-using Bubbio.Repository.Core.Interfaces;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
