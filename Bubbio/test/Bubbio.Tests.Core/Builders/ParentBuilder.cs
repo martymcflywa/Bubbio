@@ -1,48 +1,65 @@
 ﻿using System;
 using Bubbio.Core.Contracts;
-using Bubbio.Tests.Core.Mocks.Contracts;
+using Bubbio.MongoDb.Documents.Entities;
 
 namespace Bubbio.Tests.Core.Builders
 {
-    public sealed class ParentBuilder
+    public class ParentBuilder
     {
-        private readonly TestParent _testParent;
+        private readonly Parent _parent;
 
         public ParentBuilder()
         {
-            _testParent = new TestParent
+            _parent = new Parent
             {
-                Name = new Name { First = "Kim", Middle = "Chi", Last = "Ponce" }
+                Name = new Name
+                {
+                    First = "Martin",
+                    Middle = "Raymond",
+                    Last = "Ponce"
+                }
             };
         }
 
         public ParentBuilder WithId(Guid id)
         {
-            _testParent.Id = id;
+            _parent.Id = id;
+            return this;
+        }
+
+        public ParentBuilder WithModified(DateTimeOffset modified)
+        {
+            _parent.Modified = modified;
+            return this;
+        }
+
+        public ParentBuilder WithName(Name name)
+        {
+            _parent.Name = name;
             return this;
         }
 
         public ParentBuilder WithFirstName(string first)
         {
-            _testParent.Name.First = first;
+            _parent.Name.First = first;
             return this;
         }
 
         public ParentBuilder WithMiddleName(string middle)
         {
-            _testParent.Name.Middle = middle;
+            _parent.Name.Middle = middle;
             return this;
         }
 
         public ParentBuilder WithLastName(string last)
         {
-            _testParent.Name.Last = last;
+            _parent.Name.Last = last;
             return this;
         }
 
-        public TestParent Build()
+        public Parent Build()
         {
-            return _testParent;
+            return _parent;
         }
     }
 }

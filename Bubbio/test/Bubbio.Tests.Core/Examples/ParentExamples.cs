@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Bubbio.Core.Contracts;
 using Bubbio.MongoDb.Documents.Entities;
-using Bubbio.Tests.Core.Documents.Builders;
+using Bubbio.Tests.Core.Builders;
 
-namespace Bubbio.Tests.Core.Documents.Examples
+namespace Bubbio.Tests.Core.Examples
 {
     public static class ParentExamples
     {

@@ -2,7 +2,7 @@
 using Bubbio.Core.Contracts.Enums;
 using Bubbio.MongoDb.Documents.Events;
 
-namespace Bubbio.Tests.Core.Documents.Builders
+namespace Bubbio.Tests.Core.Builders
 {
     public class SleepBuilder
     {

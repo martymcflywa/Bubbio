@@ -4,10 +4,11 @@
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="5.4.1" />
-    <PackageReference Include="TestStack.BDDfy" Version="4.3.2" />
+    <ProjectReference Include="..\..\src\Bubbio.Core\Bubbio.Core.csproj" />
+    <ProjectReference Include="..\..\src\Bubbio.MongoDb.Documents\Bubbio.MongoDb.Documents.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Bubbio.Core\Bubbio.Core.csproj" />
+    <PackageReference Include="FluentAssertions" Version="5.4.1" />
+    <PackageReference Include="TestStack.BDDfy" Version="4.3.2" />
   </ItemGroup>
 </Project>

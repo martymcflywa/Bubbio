@@ -2,9 +2,9 @@
 using System.Linq;
 using Bubbio.Core.Contracts.Enums;
 using Bubbio.MongoDb.Documents.Events;
-using Bubbio.Tests.Core.Documents.Builders;
+using Bubbio.Tests.Core.Builders;
 
-namespace Bubbio.Tests.Core.Documents.Examples
+namespace Bubbio.Tests.Core.Examples
 {
     public static class BiometricUpdateExamples
     {
