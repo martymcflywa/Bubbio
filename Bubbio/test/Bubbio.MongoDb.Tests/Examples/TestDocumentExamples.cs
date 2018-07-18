@@ -26,13 +26,11 @@ namespace Bubbio.MongoDb.Tests.Examples
                 new TestProjection
                 {
                     Id = AllDocuments[0].Id,
-                    Name = AllDocuments[0].Name,
                     Version = AllDocuments[0].Version
                 },
                 new TestProjection
                 {
                     Id = AllDocuments[1].Id,
-                    Name = AllDocuments[1].Name,
                     Version = AllDocuments[1].Version
                 }
             };

@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Bubbio.Core.Repository;
 
-namespace Bubbio.Core.Repository
+namespace Bubbio.MongoDb.Interfaces
 {
-    public interface IMutateRepository
+    public interface IMutateMongoDbRepository
     {
         #region Create
 
@@ -50,7 +51,7 @@ namespace Bubbio.Core.Repository
         /// <typeparam name="TDocument">The document type.</typeparam>
         /// <typeparam name="TKey">The primary key type.</typeparam>
         /// <returns></returns>
-        Task<bool> UpdateOneAsync<TDocument, TKey>(
+        Task<bool> UpdateAsync<TDocument, TKey>(
                 TDocument updated,
                 CancellationToken token = default)
             where TDocument : IDocument<TKey>
@@ -67,7 +68,7 @@ namespace Bubbio.Core.Repository
         /// <typeparam name="TKey">The primary key type.</typeparam>
         /// <typeparam name="TField">The field type.</typeparam>
         /// <returns></returns>
-        Task<bool> UpdateOneAsync<TDocument, TKey, TField>(
+        Task<bool> UpdateAsync<TDocument, TKey, TField>(
                 TDocument toUpdate,
                 Expression<Func<TDocument, TField>> selector,
                 TField value,
@@ -88,7 +89,7 @@ namespace Bubbio.Core.Repository
         /// <typeparam name="TKey">The primary key type.</typeparam>
         /// <typeparam name="TField">The field type.</typeparam>
         /// <returns></returns>
-        Task<bool> UpdateOneAsync<TDocument, TKey, TField>(
+        Task<bool> UpdateAsync<TDocument, TKey, TField>(
                 Expression<Func<TDocument, bool>> filter,
                 Expression<Func<TDocument, TField>> selector,
                 TField value,
@@ -109,7 +110,23 @@ namespace Bubbio.Core.Repository
         /// <typeparam name="TDocument">The document type.</typeparam>
         /// <typeparam name="TKey">The primary key type.</typeparam>
         /// <returns></returns>
-        Task<long> DeleteOneAsync<TDocument, TKey>(TDocument document, CancellationToken token = default)
+        Task<long> DeleteAsync<TDocument, TKey>(TDocument document, CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>;
+
+        /// <summary>
+        /// Async delete one document by primary key.
+        /// </summary>
+        /// <param name="id">The primary key of the document to delete.</param>
+        /// <param name="partitionKey">Optional partition key.</param>
+        /// <param name="token">Optional cancellation token.</param>
+        /// <typeparam name="TDocument">The document type.</typeparam>
+        /// <typeparam name="TKey">The primary key type.</typeparam>
+        /// <returns></returns>
+        Task<long> DeleteAsync<TDocument, TKey>(
+                TKey id,
+                string partitionKey = null,
+                CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>;
 
@@ -122,7 +139,7 @@ namespace Bubbio.Core.Repository
         /// <typeparam name="TDocument">The document type.</typeparam>
         /// <typeparam name="TKey">The primary key type.</typeparam>
         /// <returns></returns>
-        Task<long> DeleteOneAsync<TDocument, TKey>(
+        Task<long> DeleteAsync<TDocument, TKey>(
                 Expression<Func<TDocument, bool>> filter,
                 string partitionKey = null,
                 CancellationToken token = default)

@@ -12,12 +12,12 @@ using MongoDB.Driver;
 
 namespace Bubbio.MongoDb
 {
-    /// <inheritdoc cref="IRepository" />
-    /// <inheritdoc cref="IRepositoryHelper" />
+    /// <inheritdoc cref="IMongoDbRepository" />
+    /// <inheritdoc cref="IMongoDbRepositoryHelper" />
     /// <summary>
     /// Implementation of IRepository for MongoDb.
     /// </summary>
-    public abstract class MongoDbRepository : IRepository, IRepositoryHelper
+    public class MongoDbRepository : IMongoDbRepository, IMongoDbRepositoryHelper
     {
         private readonly IMongoDbContext _dbContext;
 
@@ -139,7 +139,7 @@ namespace Bubbio.MongoDb
         }
 
         /// <inheritdoc />
-        public async Task<TProject> ProjectOneAsync<TDocument, TKey, TProject>(
+        public async Task<TProject> ProjectAsync<TDocument, TKey, TProject>(
             Expression<Func<TDocument, bool>> filter,
             Expression<Func<TDocument, TProject>> projection,
             string partitionKey = null,
@@ -202,7 +202,7 @@ namespace Bubbio.MongoDb
         #region Update
 
         /// <inheritdoc />
-        public async Task<bool> UpdateOneAsync<TDocument, TKey>(
+        public async Task<bool> UpdateAsync<TDocument, TKey>(
                 TDocument updated,
                 CancellationToken token = default)
             where TDocument : IDocument<TKey>
@@ -219,7 +219,7 @@ namespace Bubbio.MongoDb
         }
 
         /// <inheritdoc />
-        public async Task<bool> UpdateOneAsync<TDocument, TKey, TField>(
+        public async Task<bool> UpdateAsync<TDocument, TKey, TField>(
                 TDocument toUpdate,
                 Expression<Func<TDocument, TField>> selector,
                 TField value,
@@ -235,7 +235,7 @@ namespace Bubbio.MongoDb
         }
 
         /// <inheritdoc />
-        public async Task<bool> UpdateOneAsync<TDocument, TKey, TField>(
+        public async Task<bool> UpdateAsync<TDocument, TKey, TField>(
                 Expression<Func<TDocument, bool>> filter,
                 Expression<Func<TDocument, TField>> selector,
                 TField value,
@@ -256,7 +256,7 @@ namespace Bubbio.MongoDb
         #region Delete
 
         /// <inheritdoc />
-        public async Task<long> DeleteOneAsync<TDocument, TKey>(
+        public async Task<long> DeleteAsync<TDocument, TKey>(
                 TDocument document,
                 CancellationToken token = default)
             where TDocument : IDocument<TKey>
@@ -268,7 +268,20 @@ namespace Bubbio.MongoDb
         }
 
         /// <inheritdoc />
-        public async Task<long> DeleteOneAsync<TDocument, TKey>(
+        public async Task<long> DeleteAsync<TDocument, TKey>(
+                TKey id,
+                string partitionKey = null,
+                CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>
+        {
+            return (await GetCollection<TDocument, TKey>(partitionKey)
+                    .DeleteOneAsync(d => d.Id.Equals(id), token))
+                .DeletedCount;
+        }
+
+        /// <inheritdoc />
+        public async Task<long> DeleteAsync<TDocument, TKey>(
                 Expression<Func<TDocument, bool>> filter,
                 string partitionKey = null,
                 CancellationToken token = default)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Bubbio.Core.Repository;
+using Bubbio.MongoDb.Interfaces;
 using FluentAssertions;
 using MongoDB.Driver;
 
@@ -13,7 +14,7 @@ namespace Bubbio.MongoDb.Tests.Scenarios
         where TKey : IEquatable<TKey>
         where TProject : class
     {
-        private readonly IRepository _repository;
+        private readonly IMongoDbRepository _repository;
         private readonly MongoUrl _url = new MongoUrl("mongodb://localhost/test");
         private readonly string _partitionKey;
 
@@ -27,7 +28,7 @@ namespace Bubbio.MongoDb.Tests.Scenarios
 
         protected MongoDbRepositoryTestsBase(string partitionKey = null)
         {
-            _repository = new TestMongoDbRepository(new MongoDbContext(_url));
+            _repository = new MongoDbRepository(new MongoDbContext(_url));
             _partitionKey = partitionKey;
         }
 
@@ -68,7 +69,7 @@ namespace Bubbio.MongoDb.Tests.Scenarios
             Expression<Func<TDocument, bool>> filter,
             Expression<Func<TDocument, TProject>> projection)
         {
-            _projectedDocument = await _repository.ProjectOneAsync<TDocument, TKey, TProject>(
+            _projectedDocument = await _repository.ProjectAsync<TDocument, TKey, TProject>(
                 filter, projection, _partitionKey);
         }
 
@@ -108,7 +109,7 @@ namespace Bubbio.MongoDb.Tests.Scenarios
 
         protected async Task RepositoryIsUpdatedBy(TDocument updated)
         {
-            await _repository.UpdateOneAsync<TDocument, TKey>(updated);
+            await _repository.UpdateAsync<TDocument, TKey>(updated);
             _document = await _repository.FindAsync<TDocument, TKey>(updated.Id, _partitionKey);
         }
 
@@ -117,7 +118,7 @@ namespace Bubbio.MongoDb.Tests.Scenarios
             Expression<Func<TDocument, TField>> field,
             TField value)
         {
-            await _repository.UpdateOneAsync<TDocument, TKey, TField>(toUpdate, field, value);
+            await _repository.UpdateAsync<TDocument, TKey, TField>(toUpdate, field, value);
             _document = await _repository.FindAsync<TDocument, TKey>(toUpdate.Id, _partitionKey);
         }
 
@@ -126,7 +127,7 @@ namespace Bubbio.MongoDb.Tests.Scenarios
             Expression<Func<TDocument, TField>> field,
             TField value)
         {
-            await _repository.UpdateOneAsync<TDocument, TKey, TField>(filter, field, value);
+            await _repository.UpdateAsync<TDocument, TKey, TField>(filter, field, value);
             _document = await _repository.FindAsync<TDocument, TKey>(filter, _partitionKey);
         }
 
@@ -136,12 +137,12 @@ namespace Bubbio.MongoDb.Tests.Scenarios
 
         protected async Task RepositoryDeletesOne(TDocument document)
         {
-            _deleted = await _repository.DeleteOneAsync<TDocument, TKey>(document);
+            _deleted = await _repository.DeleteAsync<TDocument, TKey>(document);
         }
 
         protected async Task RepositoryDeletesOne(Expression<Func<TDocument, bool>> filter)
         {
-            _deleted = await _repository.DeleteOneAsync<TDocument, TKey>(filter, _partitionKey);
+            _deleted = await _repository.DeleteAsync<TDocument, TKey>(filter, _partitionKey);
         }
 
         protected async Task RepositoryDeletesMany(IEnumerable<TDocument> documents)

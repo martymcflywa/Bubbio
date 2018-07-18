@@ -7,7 +7,7 @@ namespace Bubbio.MongoDb.Interfaces
     /// <summary>
     /// Expose helper functionality.
     /// </summary>
-    public interface IRepositoryHelper
+    public interface IMongoDbRepositoryHelper
     {
         /// <summary>
         /// Get a collection by an optional partition key.

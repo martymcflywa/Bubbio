@@ -2,11 +2,12 @@
 set -e
 source ./scripts/env.sh
 
+TESTS=$PROJECT/test/**
 TEST=*.Tests
 
-for p in $PROJECT/test/**; do
-    if [[ "$p" == $TEST ]]; then
-        echo "Executing test run for $p";
-        dotnet test $p;
+for t in $TESTS; do
+    if [[ $t == $TEST ]]; then
+        echo "Executing test run for $t";
+        dotnet test $t;
     fi
 done

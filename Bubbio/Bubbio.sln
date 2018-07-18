@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.MongoDb.Documents", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Tests.Core", "test\Bubbio.Tests.Core\Bubbio.Tests.Core.csproj", "{54C8344D-4FDE-4537-8389-CE93C8E3A2D5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Repository.MongoDb", "src\Bubbio.Repository.MongoDb\Bubbio.Repository.MongoDb.csproj", "{B2025399-C98E-42D0-861A-B196F2521BE8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbio.Repository.MongoDb.Tests", "test\Bubbio.Repository.MongoDb.Tests\Bubbio.Repository.MongoDb.Tests.csproj", "{5D7CD887-722E-48AB-ACE4-5C3B35F4AF49}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,5 +53,13 @@ Global
 		{54C8344D-4FDE-4537-8389-CE93C8E3A2D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{54C8344D-4FDE-4537-8389-CE93C8E3A2D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{54C8344D-4FDE-4537-8389-CE93C8E3A2D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2025399-C98E-42D0-861A-B196F2521BE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2025399-C98E-42D0-861A-B196F2521BE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2025399-C98E-42D0-861A-B196F2521BE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2025399-C98E-42D0-861A-B196F2521BE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D7CD887-722E-48AB-ACE4-5C3B35F4AF49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D7CD887-722E-48AB-ACE4-5C3B35F4AF49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D7CD887-722E-48AB-ACE4-5C3B35F4AF49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D7CD887-722E-48AB-ACE4-5C3B35F4AF49}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

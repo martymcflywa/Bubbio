@@ -5,6 +5,7 @@ using Bubbio.MongoDb.Documents.Constants;
 using Bubbio.MongoDb.Documents.Entities;
 using Bubbio.MongoDb.Tests.Examples;
 using Bubbio.MongoDb.Tests.Scenarios;
+using Bubbio.Tests.Core.Examples;
 using TestStack.BDDfy;
 using Xunit;
 
@@ -115,7 +116,6 @@ namespace Bubbio.MongoDb.Tests
                     d => new TestProjection
                     {
                         Id = d.Id,
-                        Name = d.Name,
                         Version = d.Version
                     }))
                 .Then(_ => DocumentIsProjected(OneProjection))
@@ -131,7 +131,6 @@ namespace Bubbio.MongoDb.Tests
                     d => new TestProjection
                     {
                         Id = d.Id,
-                        Name = d.Name,
                         Version = d.Version
                     }))
                 .Then(_ => DocumentsAreProjected(AllProjections))

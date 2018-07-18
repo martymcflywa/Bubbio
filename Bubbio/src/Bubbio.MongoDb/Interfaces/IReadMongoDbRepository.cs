@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Bubbio.Core.Repository;
 
-namespace Bubbio.Core.Repository
+namespace Bubbio.MongoDb.Interfaces
 {
-    public interface IReadRepository
+    public interface IReadMongoDbRepository
     {
         /// <summary>
         /// Async find one document by its primary key.
@@ -135,7 +136,7 @@ namespace Bubbio.Core.Repository
         /// <typeparam name="TKey">The primary key type.</typeparam>
         /// <typeparam name="TProject">The projection type.</typeparam>
         /// <returns></returns>
-        Task<TProject> ProjectOneAsync<TDocument, TKey, TProject>(
+        Task<TProject> ProjectAsync<TDocument, TKey, TProject>(
                 Expression<Func<TDocument, bool>> filter,
                 Expression<Func<TDocument, TProject>> projection,
                 string partitionKey = null,
