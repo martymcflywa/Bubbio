@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Bubbio.MongoDb.Documents.Constants;
+using Bubbio.MongoDb.Documents.Entities;
 using Bubbio.MongoDb.Tests.Examples;
 using Bubbio.MongoDb.Tests.Scenarios;
 using TestStack.BDDfy;
@@ -8,17 +10,17 @@ using Xunit;
 
 namespace Bubbio.MongoDb.Tests
 {
-    public class MongoDbRepositoryTests : MongoDbRepositoryTestsBase<TestDocument, Guid, TestProjection>
+    public class MongoDbRepositoryTests : MongoDbRepositoryTestsBase<Parent, Guid, TestProjection>
     {
         private readonly TestDocumentExamples _testDocumentExamples;
 
-        private TestDocument OneDocument =>
+        private Parent OneDocument =>
             _testDocumentExamples.OneDocument;
 
-        private List<TestDocument> AllDocuments =>
+        private List<Parent> AllDocuments =>
             _testDocumentExamples.AllDocuments;
 
-        private TestDocument UpdatedDocument =>
+        private Parent UpdatedDocument =>
             _testDocumentExamples.UpdatedDocument;
 
         private TestProjection OneProjection =>
@@ -28,11 +30,10 @@ namespace Bubbio.MongoDb.Tests
             _testDocumentExamples.AllProjections;
 
         public MongoDbRepositoryTests()
+            : base(Partitions.Parents.ToString())
         {
             _testDocumentExamples = new TestDocumentExamples();
         }
-
-        #region No PartitionKey
 
         #region Create
 
@@ -80,7 +81,7 @@ namespace Bubbio.MongoDb.Tests
         public void ReadManyByFilter()
         {
             this.Given(_ => RepositoryContains(AllDocuments))
-                .When(_ => RepositoryRetrievesManyByFilter(d => d.Timestamp > DateTimeOffset.UnixEpoch))
+                .When(_ => RepositoryRetrievesManyByFilter(d => d.Created > DateTimeOffset.UnixEpoch))
                 .Then(_ => RepositoryHas(AllDocuments))
                 .BDDfy();
         }
@@ -175,8 +176,8 @@ namespace Bubbio.MongoDb.Tests
             this.Given(_ => RepositoryContains(OneDocument))
                 .When(_ => RepositoryIsUpdatedBy(
                     doc => doc.Id.Equals(UpdatedDocument.Id),
-                    field => field.Timestamp,
-                    UpdatedDocument.Timestamp))
+                    field => field.Created,
+                    UpdatedDocument.Created))
                 .Then(_ => RepositoryHas(UpdatedDocument))
                 .BDDfy();
         }
@@ -224,8 +225,6 @@ namespace Bubbio.MongoDb.Tests
                 .And(_ => RepositoryHas(0))
                 .BDDfy();
         }
-
-        #endregion
 
         #endregion
     }

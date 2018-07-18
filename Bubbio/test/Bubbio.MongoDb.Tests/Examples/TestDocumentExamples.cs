@@ -1,53 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bubbio.MongoDb.Tests.Builders;
+using Bubbio.Core.Contracts;
+using Bubbio.MongoDb.Documents.Entities;
+using Bubbio.Tests.Core.Builders;
+using Bubbio.Tests.Core.Examples;
 
 namespace Bubbio.MongoDb.Tests.Examples
 {
     public class TestDocumentExamples
     {
-        public List<Guid> Ids { get; }
+        public List<Guid> Ids => ParentExamples.Ids;
+        public List<Parent> AllDocuments => ParentExamples.AllParents.ToList();
+        public Parent OneDocument => ParentExamples.OneParent;
 
-        public List<TestDocument> AllDocuments { get; }
-        public TestDocument OneDocument => AllDocuments.First();
-
-        public TestDocument UpdatedDocument => UpdateDocument(OneDocument);
+        public Parent UpdatedDocument => UpdateDocument(OneDocument);
 
         public List<TestProjection> AllProjections { get; }
         public TestProjection OneProjection => AllProjections.First();
 
         public TestDocumentExamples()
         {
-            Ids = new List<Guid>
-            {
-                Guid.NewGuid(),
-                Guid.NewGuid(),
-                Guid.NewGuid()
-            };
-
-            AllDocuments = new List<TestDocument>
-            {
-                new TestDocumentBuilder()
-                    .WithId(Ids[0])
-                    .WithName("Martin Ponce")
-                    .WithTimestamp(DateTimeOffset.UtcNow.AddDays(-1))
-                    .WithVersion(1)
-                    .Build(),
-                new TestDocumentBuilder()
-                    .WithId(Ids[1])
-                    .WithName("Chi Ponce")
-                    .WithTimestamp(DateTimeOffset.UtcNow.AddDays(-2))
-                    .WithVersion(1)
-                    .Build(),
-                new TestDocumentBuilder()
-                    .WithId(Ids[2])
-                    .WithName("Damon Ponce")
-                    .WithTimestamp(DateTimeOffset.UtcNow.AddDays(-3))
-                    .WithVersion(1)
-                    .Build()
-            };
-
             AllProjections = new List<TestProjection>
             {
                 new TestProjection
@@ -61,23 +34,20 @@ namespace Bubbio.MongoDb.Tests.Examples
                     Id = AllDocuments[1].Id,
                     Name = AllDocuments[1].Name,
                     Version = AllDocuments[1].Version
-                },
-                new TestProjection
-                {
-                    Id = AllDocuments[2].Id,
-                    Name = AllDocuments[2].Name,
-                    Version = AllDocuments[2].Version
                 }
             };
         }
 
-        private static TestDocument UpdateDocument(TestDocument document) =>
-            new TestDocument
-            {
-                Id = document.Id,
-                Name = "Updated Document",
-                Timestamp = DateTimeOffset.UtcNow,
-                Version = 2
-            };
+        private static Parent UpdateDocument(Parent parent) =>
+            new ParentBuilder()
+                .WithId(parent.Id)
+                .WithCreated(parent.Created)
+                .WithModified(DateTimeOffset.UtcNow)
+                .WithName(new Name
+                {
+                    First = "Updated",
+                    Last = "Parent"
+                })
+                .Build();
     }
 }

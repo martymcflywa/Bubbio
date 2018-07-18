@@ -9,12 +9,13 @@ using MongoDB.Driver;
 namespace Bubbio.MongoDb.Tests.Scenarios
 {
     public abstract class MongoDbRepositoryTestsBase<TDocument, TKey, TProject>
-        where TDocument : IDocument<TKey>
+        where TDocument : IPartitionDocument<TKey>
         where TKey : IEquatable<TKey>
         where TProject : class
     {
         private readonly IRepository _repository;
         private readonly MongoUrl _url = new MongoUrl("mongodb://localhost/test");
+        private readonly string _partitionKey;
 
         private TDocument _document;
         private IEnumerable<TDocument> _documents;
@@ -24,50 +25,51 @@ namespace Bubbio.MongoDb.Tests.Scenarios
         private long _count;
         private long _deleted;
 
-        protected MongoDbRepositoryTestsBase()
+        protected MongoDbRepositoryTestsBase(string partitionKey = null)
         {
-            _repository = new MongoDbRepository(new MongoDbContext(_url));
+            _repository = new TestMongoDbRepository(new MongoDbContext(_url));
+            _partitionKey = partitionKey;
         }
 
         protected async Task RepositoryIsEmpty()
         {
-            await _repository.DropCollectionAsync<TDocument, TKey>();
+            await _repository.DropCollectionAsync<TDocument, TKey>(_partitionKey);
         }
 
         #region Read
 
         protected async Task RepositoryRetrievesOneById(TKey id) =>
-            _document = await _repository.FindAsync<TDocument, TKey>(id);
+            _document = await _repository.FindAsync<TDocument, TKey>(id, _partitionKey);
 
         protected async Task RepositoryRetrievesOneByFilter(Expression<Func<TDocument, bool>> filter) =>
-            _document = await _repository.FindAsync<TDocument, TKey>(filter);
+            _document = await _repository.FindAsync<TDocument, TKey>(filter, _partitionKey);
 
         protected async Task RepositoryRetrievesManyByFilter(Expression<Func<TDocument, bool>> filter) =>
-            _documents = await _repository.FindManyAsync<TDocument, TKey>(filter, null);
+            _documents = await _repository.FindManyAsync<TDocument, TKey>(filter, _partitionKey);
 
         protected async Task RepositoryRetrievesPaginated(
             Expression<Func<TDocument, bool>> filter,
             int skip,
             int take)
         {
-            _documents = await _repository.FindManyAsync<TDocument, TKey>(filter, skip, take);
+            _documents = await _repository.FindManyAsync<TDocument, TKey>(filter, skip, take, _partitionKey);
         }
 
         protected async Task RepositoryRetrievesAny(Expression<Func<TDocument, bool>> filter) =>
-            _foundAny = await _repository.AnyAsync<TDocument, TKey>(filter);
+            _foundAny = await _repository.AnyAsync<TDocument, TKey>(filter, _partitionKey);
 
         protected async Task RepositoryRetrievesCountByFilter(Expression<Func<TDocument, bool>> filter) =>
-            _count = await _repository.CountAsync<TDocument, TKey>(filter);
+            _count = await _repository.CountAsync<TDocument, TKey>(filter, _partitionKey);
 
         private async Task<long> RepositoryRetrievesCountForCollection() =>
-            await _repository.CountAsync<TDocument, TKey>();
+            await _repository.CountAsync<TDocument, TKey>(_partitionKey);
 
         protected async Task RepositoryProjectsOne(
             Expression<Func<TDocument, bool>> filter,
             Expression<Func<TDocument, TProject>> projection)
         {
             _projectedDocument = await _repository.ProjectOneAsync<TDocument, TKey, TProject>(
-                filter, projection);
+                filter, projection, _partitionKey);
         }
 
         protected async Task RepositoryProjectsMany(
@@ -75,7 +77,7 @@ namespace Bubbio.MongoDb.Tests.Scenarios
             Expression<Func<TDocument, TProject>> projection)
         {
             _projectedDocuments = await _repository.ProjectManyAsync<TDocument, TKey, TProject>(
-                filter, projection);
+                filter, projection, _partitionKey);
         }
 
         #endregion
@@ -107,7 +109,7 @@ namespace Bubbio.MongoDb.Tests.Scenarios
         protected async Task RepositoryIsUpdatedBy(TDocument updated)
         {
             await _repository.UpdateOneAsync<TDocument, TKey>(updated);
-            _document = await _repository.FindAsync<TDocument, TKey>(updated.Id);
+            _document = await _repository.FindAsync<TDocument, TKey>(updated.Id, _partitionKey);
         }
 
         protected async Task RepositoryIsUpdatedBy<TField>(
@@ -116,7 +118,7 @@ namespace Bubbio.MongoDb.Tests.Scenarios
             TField value)
         {
             await _repository.UpdateOneAsync<TDocument, TKey, TField>(toUpdate, field, value);
-            _document = await _repository.FindAsync<TDocument, TKey>(toUpdate.Id);
+            _document = await _repository.FindAsync<TDocument, TKey>(toUpdate.Id, _partitionKey);
         }
 
         protected async Task RepositoryIsUpdatedBy<TField>(
@@ -125,7 +127,7 @@ namespace Bubbio.MongoDb.Tests.Scenarios
             TField value)
         {
             await _repository.UpdateOneAsync<TDocument, TKey, TField>(filter, field, value);
-            _document = await _repository.FindAsync<TDocument, TKey>(filter);
+            _document = await _repository.FindAsync<TDocument, TKey>(filter, _partitionKey);
         }
 
         #endregion
@@ -139,7 +141,7 @@ namespace Bubbio.MongoDb.Tests.Scenarios
 
         protected async Task RepositoryDeletesOne(Expression<Func<TDocument, bool>> filter)
         {
-            _deleted = await _repository.DeleteOneAsync<TDocument, TKey>(filter);
+            _deleted = await _repository.DeleteOneAsync<TDocument, TKey>(filter, _partitionKey);
         }
 
         protected async Task RepositoryDeletesMany(IEnumerable<TDocument> documents)
@@ -149,7 +151,7 @@ namespace Bubbio.MongoDb.Tests.Scenarios
 
         protected async Task RepositoryDeletesMany(Expression<Func<TDocument, bool>> filter)
         {
-            _deleted = await _repository.DeleteManyAsync<TDocument, TKey>(filter);
+            _deleted = await _repository.DeleteManyAsync<TDocument, TKey>(filter, _partitionKey);
         }
 
         #endregion

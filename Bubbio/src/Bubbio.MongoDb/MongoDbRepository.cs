@@ -17,7 +17,7 @@ namespace Bubbio.MongoDb
     /// <summary>
     /// Implementation of IRepository for MongoDb.
     /// </summary>
-    public class MongoDbRepository : IRepository, IRepositoryHelper
+    public abstract class MongoDbRepository : IRepository, IRepositoryHelper
     {
         private readonly IMongoDbContext _dbContext;
 

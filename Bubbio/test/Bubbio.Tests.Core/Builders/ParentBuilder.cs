@@ -27,6 +27,12 @@ namespace Bubbio.Tests.Core.Builders
             return this;
         }
 
+        public ParentBuilder WithCreated(DateTimeOffset created)
+        {
+            _parent.Created = created;
+            return this;
+        }
+
         public ParentBuilder WithModified(DateTimeOffset modified)
         {
             _parent.Modified = modified;
