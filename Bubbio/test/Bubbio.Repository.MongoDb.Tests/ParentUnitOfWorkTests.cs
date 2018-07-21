@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Linq;
+using Bubbio.Core.Repository;
 using Bubbio.MongoDb;
 using Bubbio.MongoDb.Documents.Constants;
+using Bubbio.MongoDb.Documents.Entities;
+using Bubbio.MongoDb.Interfaces;
 using Bubbio.Repository.MongoDb.Tests.Scenarios;
+using Bubbio.Tests.Core;
 using Bubbio.Tests.Core.Examples;
 using MongoDB.Driver;
 using TestStack.BDDfy;
@@ -10,394 +14,397 @@ using Xunit;
 
 namespace Bubbio.Repository.MongoDb.Tests
 {
-    public class ParentUnitOfWorkTests : ParentUnitOfWorkTestsBase
+    public class ParentUnitOfWorkTests : UnitOfWorkTestsBase<Parent, Guid>
     {
-        private static readonly MongoUrl Url = new MongoUrl("mongodb://localhost/test");
+        private static readonly MongoUrl Url = new MongoUrl(TestConstants.MongoUrl);
+        private static readonly IMongoDbRepository MongoDb = new MongoDbRepository(Url);
+        private static readonly IRepository<Parent, Guid> Repository =
+            new Repository<Parent, Guid>(MongoDb, Partitions.Parents.ToString());
+        private static readonly IUnitOfWork<Parent, Guid> UnitOfWork = new ParentUnitOfWork(Repository);
 
         public ParentUnitOfWorkTests()
-            : base(new MongoDbRepository(Url))
+            : base(Repository, UnitOfWork)
         {
         }
 
         [Fact]
-        public void Save()
+        public void SaveOneParent()
         {
-            var parent = ParentExamples.OneParent;
-
             this.Given(_ => RepositoryIsEmpty())
-                .When(_ => ParentIsSaved(parent.Name.First, parent.Name.Last, parent.Name.Middle))
+                .When(_ => SaveOne(ParentExamples.OneParent))
                 .Then(_ => RepositoryHas(1))
                 .BDDfy();
         }
 
         [Fact]
-        public void SaveMany()
+        public void SaveManyParents()
         {
             this.Given(_ => RepositoryIsEmpty())
-                .When(_ => ParentsAreSaved(ParentExamples.AllParents))
+                .When(_ => SaveMany(ParentExamples.AllParents))
                 .Then(_ => RepositoryHas(ParentExamples.AllParents.Count()))
                 .BDDfy();
         }
 
         [Fact]
-        public void GetOneById()
+        public void GetOneParentById()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => GetOneParentById(ParentExamples.OneParent.Id))
-                .Then(_ => ParentIsFound(ParentExamples.OneParent))
+                .When(_ => GetOne(ParentExamples.OneParent.Id))
+                .Then(_ => DocumentIsFound(ParentExamples.OneParent))
                 .BDDfy();
         }
 
         [Fact]
-        public void GetOneByIdNotFound()
+        public void GetOneParentByIdNotFound()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => GetOneParentById(Guid.Empty))
-                .Then(_ => ParentNotFound())
+                .When(_ => GetOne(Guid.Empty))
+                .Then(_ => DocumentNotFound())
                 .BDDfy();
         }
 
         [Fact]
-        public void GetOneByDocument()
+        public void GetOneParentByDocument()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => GetOneParentByDocument(ParentExamples.OneParent))
-                .Then(_ => ParentIsFound(ParentExamples.OneParent))
+                .When(_ => GetOne(ParentExamples.OneParent))
+                .Then(_ => DocumentIsFound(ParentExamples.OneParent))
                 .BDDfy();
         }
 
         [Fact]
-        public void GetOneByDocumentNotFound()
+        public void GetOneParentByDocumentNotFound()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => GetOneParentByDocument(ParentExamples.AllParents.Last()))
-                .Then(_ => ParentNotFound())
+                .When(_ => GetOne(ParentExamples.AllParents.Last()))
+                .Then(_ => DocumentNotFound())
                 .BDDfy();
         }
 
         [Fact]
-        public void GetOneByPredicate()
+        public void GetOneParentByPredicate()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => GetOneParentByPredicate(p => p.Version.Equals(Schema.Version)))
-                .Then(_ => ParentIsFound(ParentExamples.OneParent))
+                .When(_ => GetOne(p => p.Version.Equals(Schema.Version)))
+                .Then(_ => DocumentIsFound(ParentExamples.OneParent))
                 .BDDfy();
         }
 
         [Fact]
-        public void GetOneByPredicateNotFound()
+        public void GetOneParentByPredicateNotFound()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => GetOneParentByPredicate(p => p.Version.Equals(0)))
-                .Then(_ => ParentNotFound())
+                .When(_ => GetOne(p => p.Version.Equals(0)))
+                .Then(_ => DocumentNotFound())
                 .BDDfy();
         }
 
         [Fact]
-        public void GetOneByPredicateManyFound()
+        public void GetOneParentByPredicateManyFound()
         {
             this.Given(_ => RepositoryContains(ParentExamples.AllParents))
-                .When(_ => GetOneParentByPredicate(p => p.Version.Equals(Schema.Version)))
-                .Then(_ => ParentNotFound())
+                .When(_ => GetOne(p => p.Version.Equals(Schema.Version)))
+                .Then(_ => DocumentNotFound())
                 .BDDfy();
         }
 
         [Fact]
-        public void GetMany()
+        public void GetManyParents()
         {
             this.Given(_ => RepositoryContains(ParentExamples.AllParents))
-                .When(_ => GetManyParents(p => p.Version.Equals(Schema.Version)))
-                .Then(_ => ParentsAreFound(ParentExamples.AllParents))
+                .When(_ => GetMany(p => p.Version.Equals(Schema.Version)))
+                .Then(_ => DocumentsAreFound(ParentExamples.AllParents))
                 .BDDfy();
         }
 
         [Fact]
-        public void GetManyNotFound()
+        public void GetManyParentsNotFound()
         {
             this.Given(_ => RepositoryContains(ParentExamples.AllParents))
-                .When(_ => GetManyParents(p => p.Version.Equals(0)))
-                .Then(_ => ParentsNotFound())
+                .When(_ => GetMany(p => p.Version.Equals(0)))
+                .Then(_ => DocumentsNotFound())
                 .BDDfy();
         }
 
         [Fact]
-        public void GetManyPaged()
+        public void GetManyPagedParents()
         {
             this.Given(_ => RepositoryContains(ParentExamples.AllParents))
-                .When(_ => GetManyParentsPaged(p => p.Version.Equals(Schema.Version), 0, 1))
-                .Then(_ => ParentsAreFound(ParentExamples.AllParents.Take(1)))
+                .When(_ => GetManyPaged(p => p.Version.Equals(Schema.Version), 0, 1))
+                .Then(_ => DocumentsAreFound(ParentExamples.AllParents.Take(1)))
                 .BDDfy();
         }
 
         [Fact]
-        public void GetManyPagedNotFound()
+        public void GetManyPagedParentsNotFound()
         {
             this.Given(_ => RepositoryContains(ParentExamples.AllParents))
-                .When(_ => GetManyParentsPaged(p => p.Version.Equals(0), 0, 1))
-                .Then(_ => ParentsNotFound())
+                .When(_ => GetManyPaged(p => p.Version.Equals(0), 0, 1))
+                .Then(_ => DocumentsNotFound())
                 .BDDfy();
         }
 
         [Fact]
-        public void Count()
+        public void CountParents()
         {
             this.Given(_ => RepositoryContains(ParentExamples.AllParents))
-                .When(_ => CountAllParents())
-                .Then(_ => CountedParents(ParentExamples.AllParents.Count()))
+                .When(_ => Count())
+                .Then(_ => DocumentsCounted(ParentExamples.AllParents.Count()))
                 .BDDfy();
         }
 
         [Fact]
-        public void CountEmpty()
+        public void CountParentsEmpty()
         {
             this.Given(_ => RepositoryIsEmpty())
-                .When(_ => CountAllParents())
-                .Then(_ => CountedParents(0))
+                .When(_ => Count())
+                .Then(_ => DocumentsCounted(0))
                 .BDDfy();
         }
 
         [Fact]
-        public void CountByPredicate()
+        public void CountParentsByPredicate()
         {
             this.Given(_ => RepositoryContains(ParentExamples.AllParents))
-                .When(_ => CountParentsByPredicate(p => p.Version.Equals(Schema.Version)))
-                .Then(_ => CountedParents(ParentExamples.AllParents.Count()))
+                .When(_ => Count(p => p.Version.Equals(Schema.Version)))
+                .Then(_ => DocumentsCounted(ParentExamples.AllParents.Count()))
                 .BDDfy();
         }
 
         [Fact]
-        public void CountByPredicateNotFound()
+        public void CountParentsByPredicateNotFound()
         {
             this.Given(_ => RepositoryContains(ParentExamples.AllParents))
-                .When(_ => CountParentsByPredicate(p => p.Version.Equals(0)))
-                .Then(_ => CountedParents(0))
+                .When(_ => Count(p => p.Version.Equals(0)))
+                .Then(_ => DocumentsCounted(0))
                 .BDDfy();
         }
 
         [Fact]
-        public void ProjectOne()
+        public void ProjectOneParent()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => ProjectOneParent(p => p.Version.Equals(Schema.Version), p => new TestProjection
+                .When(_ => ProjectOne(p => p.Version.Equals(Schema.Version), p => new TestProjection
                 {
                     Id = p.Id,
                     Version = p.Version
                 }))
-                .Then(_ => ParentIsProjected(ParentExamples.OneProjectedParent))
+                .Then(_ => DocumentProjected(ParentExamples.OneProjectedParent))
                 .BDDfy();
         }
 
         [Fact]
-        public void ProjectOneNotFound()
+        public void ProjectOneParentNotFound()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => ProjectOneParent(p => p.Version.Equals(0), p => new TestProjection
+                .When(_ => ProjectOne(p => p.Version.Equals(0), p => new TestProjection
                 {
                     Id = p.Id,
                     Version = p.Version
                 }))
-                .Then(_ => ParentNotProjected())
+                .Then(_ => DocumentNotProjected())
                 .BDDfy();
         }
 
         [Fact]
-        public void ProjectOneManyFound()
+        public void ProjectOneParentManyFound()
         {
             this.Given(_ => RepositoryContains(ParentExamples.AllParents))
-                .When(_ => ProjectOneParent(p => p.Version.Equals(Schema.Version), p => new TestProjection
+                .When(_ => ProjectOne(p => p.Version.Equals(Schema.Version), p => new TestProjection
                 {
                     Id = p.Id,
                     Version = p.Version
                 }))
-                .Then(_ => ParentNotProjected())
+                .Then(_ => DocumentNotProjected())
                 .BDDfy();
         }
 
         [Fact]
-        public void ProjectMany()
+        public void ProjectManyParents()
         {
             this.Given(_ => RepositoryContains(ParentExamples.AllParents))
-                .When(_ => ProjectManyParents(p => p.Version.Equals(Schema.Version), p => new TestProjection
+                .When(_ => ProjectMany(p => p.Version.Equals(Schema.Version), p => new TestProjection
                 {
                     Id = p.Id,
                     Version = p.Version
                 }))
-                .Then(_ => ParentsAreProjected(ParentExamples.AllProjectedParents))
+                .Then(_ => DocumentsProjected(ParentExamples.AllProjectedParents))
                 .BDDfy();
         }
 
         [Fact]
-        public void ProjectManyNotFound()
+        public void ProjectManyParentsNotFound()
         {
             this.Given(_ => RepositoryContains(ParentExamples.AllParents))
-                .When(_ => ProjectManyParents(p => p.Version.Equals(0), p => new TestProjection
+                .When(_ => ProjectMany(p => p.Version.Equals(0), p => new TestProjection
                 {
                     Id = p.Id,
                     Version = p.Version
                 }))
-                .Then(_ => ParentsNotProjected())
+                .Then(_ => DocumentsNotProjected())
                 .BDDfy();
         }
 
         [Fact]
-        public void UpdateByDocument()
+        public void UpdateParentByDocument()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => UpdateOneParentByDocument(ParentExamples.OneUpdatedParent))
-                .Then(_ => ParentIsUpdated(true))
+                .When(_ => Update(ParentExamples.OneUpdatedParent))
+                .Then(_ => DocumentUpdated(true))
                 .And(_ => RepositoryHas(ParentExamples.OneUpdatedParent))
                 .BDDfy();
         }
 
         [Fact]
-        public void UpdateByDocumentNotFound()
+        public void UpdateParentByDocumentNotFoundUpsert()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => UpdateOneParentByDocument(ParentExamples.AllUpdatedParents.Last()))
-                .Then(_ => ParentIsUpdated(false))
+                .When(_ => Update(ParentExamples.AllUpdatedParents.Last()))
+                .Then(_ => DocumentUpdated(false))
+                .And(_ => RepositoryHas(2))
+                .And(_ => RepositoryHas(ParentExamples.OneParent))
                 .And(_ => RepositoryHas(ParentExamples.AllUpdatedParents.Last()))
                 .BDDfy();
         }
 
         [Fact]
-        public void UpdateByDocumentField()
+        public void UpdateParentByDocumentField()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => UpdateOneParentByFieldSelector(ParentExamples.OneParent, p => p.Name, ParentExamples.OneUpdatedParent.Name))
-                .Then(_ => ParentIsUpdated(true))
-                .And(_ => RepositoryHas(p => p.Id.Equals(ParentExamples.OneUpdatedParent.Id)))
+                .When(_ => Update(ParentExamples.OneParent, p => p.Name, ParentExamples.OneUpdatedParent.Name))
+                .Then(_ => DocumentUpdated(true))
+                .And(_ => RepositoryHas(ParentExamples.OneUpdatedParent))
                 .BDDfy();
         }
 
         [Fact]
-        public void UpdateByPredicate()
+        public void UpdateParentByPredicate()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => UpdateOneParentByPredicateFieldSelector(p => p.Id.Equals(ParentExamples.OneParent.Id),
+                .When(_ => Update(p => p.Id.Equals(ParentExamples.OneParent.Id),
                     p => p.Name, ParentExamples.OneUpdatedParent.Name))
-                .Then(_ => ParentIsUpdated(true))
-                .And(_ => RepositoryHas(p => p.Id.Equals(ParentExamples.OneUpdatedParent.Id)))
+                .Then(_ => DocumentUpdated(true))
+                .And(_ => RepositoryHas(ParentExamples.OneUpdatedParent))
                 .BDDfy();
         }
 
         [Fact]
-        public void UpdateByPredicateNotFound()
+        public void UpdateParentByPredicateNotFound()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => UpdateOneParentByPredicateFieldSelector(p => p.Id.Equals(ParentExamples.AllParents.Last().Id),
+                .When(_ => Update(p => p.Id.Equals(ParentExamples.AllParents.Last().Id),
                     p => p.Name, ParentExamples.OneUpdatedParent.Name))
-                .Then(_ => ParentIsUpdated(false))
-                .And(_ => ParentNotUpdated())
+                .Then(_ => DocumentUpdated(false))
+                .And(_ => RepositoryHas(ParentExamples.OneParent))
                 .BDDfy();
         }
 
         [Fact]
-        public void UpdateByPredicateManyFound()
+        public void UpdateParentByPredicateManyFound()
         {
             this.Given(_ => RepositoryContains(ParentExamples.AllParents))
-                .When(_ => UpdateOneParentByPredicateFieldSelector(p => p.Version.Equals(Schema.Version),
+                .When(_ => Update(p => p.Version.Equals(Schema.Version),
                     p => p.Name, ParentExamples.OneUpdatedParent.Name))
-                .Then(_ => ParentIsUpdated(false))
-                .And(_ => ParentNotUpdated())
+                .Then(_ => DocumentUpdated(false))
                 .BDDfy();
         }
 
         [Fact]
-        public void DeleteOneById()
+        public void DeleteOneParentById()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => DeleteOneParentById(ParentExamples.OneParent.Id))
-                .Then(_ => ParentsDeleted(1))
+                .When(_ => Delete(ParentExamples.OneParent.Id))
+                .Then(_ => DocumentsDeleted(1))
                 .And(_ => RepositoryHas(0))
                 .BDDfy();
         }
 
         [Fact]
-        public void DeleteOneByIdNotFound()
+        public void DeleteOneParentByIdNotFound()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => DeleteOneParentById(ParentExamples.AllParents.Last().Id))
-                .Then(_ => ParentsDeleted(0))
+                .When(_ => Delete(ParentExamples.AllParents.Last().Id))
+                .Then(_ => DocumentsDeleted(0))
                 .And(_ => RepositoryHas(1))
                 .BDDfy();
         }
 
         [Fact]
-        public void DeleteOneByDocument()
+        public void DeleteOneParentByDocument()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => DeleteOneParentByDocument(ParentExamples.OneParent))
-                .Then(_ => ParentsDeleted(1))
+                .When(_ => Delete(ParentExamples.OneParent))
+                .Then(_ => DocumentsDeleted(1))
                 .And(_ => RepositoryHas(0))
                 .BDDfy();
         }
 
         [Fact]
-        public void DeleteOneByDocumentNotFound()
+        public void DeleteOneParentByDocumentNotFound()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => DeleteOneParentByDocument(ParentExamples.AllParents.Last()))
-                .Then(_ => ParentsDeleted(0))
+                .When(_ => Delete(ParentExamples.AllParents.Last()))
+                .Then(_ => DocumentsDeleted(0))
                 .And(_ => RepositoryHas(1))
                 .BDDfy();
         }
 
         [Fact]
-        public void DeleteOneByPredicate()
+        public void DeleteOneParentByPredicate()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => DeleteOneParentByPredicate(p => p.Version.Equals(Schema.Version)))
-                .Then(_ => ParentsDeleted(1))
+                .When(_ => Delete(p => p.Version.Equals(Schema.Version)))
+                .Then(_ => DocumentsDeleted(1))
                 .And(_ => RepositoryHas(0))
                 .BDDfy();
         }
 
         [Fact]
-        public void DeleteOneByPredicateNotFound()
+        public void DeleteOneParentByPredicateNotFound()
         {
             this.Given(_ => RepositoryContains(ParentExamples.OneParent))
-                .When(_ => DeleteOneParentByPredicate(p => p.Version.Equals(0)))
-                .Then(_ => ParentsDeleted(0))
+                .When(_ => Delete(p => p.Version.Equals(0)))
+                .Then(_ => DocumentsDeleted(0))
                 .And(_ => RepositoryHas(1))
                 .BDDfy();
         }
 
         [Fact]
-        public void DeleteOneByPredicateManyFound()
+        public void DeleteOneParentByPredicateManyFound()
         {
             this.Given(_ => RepositoryContains(ParentExamples.AllParents))
-                .When(_ => DeleteOneParentByPredicate(p => p.Version.Equals(Schema.Version)))
-                .Then(_ => ParentsDeleted(0))
+                .When(_ => Delete(p => p.Version.Equals(Schema.Version)))
+                .Then(_ => DocumentsDeleted(0))
                 .And(_ => RepositoryHas(ParentExamples.AllParents.Count()))
                 .BDDfy();
         }
 
         [Fact]
-        public void DeleteManyByDocuments()
+        public void DeleteManyParentsByDocuments()
         {
             this.Given(_ => RepositoryContains(ParentExamples.AllParents))
-                .When(_ => DeleteManyParentsByDocument(ParentExamples.AllParents))
-                .Then(_ => ParentsDeleted(ParentExamples.AllParents.Count()))
+                .When(_ => DeleteMany(ParentExamples.AllParents))
+                .Then(_ => DocumentsDeleted(ParentExamples.AllParents.Count()))
                 .And(_ => RepositoryHas(0))
                 .BDDfy();
         }
 
         [Fact]
-        public void DeleteManyByPredicate()
+        public void DeleteManyParentsByPredicate()
         {
             this.Given(_ => RepositoryContains(ParentExamples.AllParents))
-                .When(_ => DeleteManyParentsByPredicate(p => p.Version.Equals(Schema.Version)))
-                .Then(_ => ParentsDeleted(ParentExamples.AllParents.Count()))
+                .When(_ => DeleteMany(p => p.Version.Equals(Schema.Version)))
+                .Then(_ => DocumentsDeleted(ParentExamples.AllParents.Count()))
                 .And(_ => RepositoryHas(0))
                 .BDDfy();
         }
 
         [Fact]
-        public void DeleteManyByPredicateNotFound()
+        public void DeleteManyParentsByPredicateNotFound()
         {
             this.Given(_ => RepositoryContains(ParentExamples.AllParents))
-                .When(_ => DeleteManyParentsByPredicate(p => p.Version.Equals(0)))
-                .Then(_ => ParentsDeleted(0))
+                .When(_ => DeleteMany(p => p.Version.Equals(0)))
+                .Then(_ => DocumentsDeleted(0))
                 .And(_ => RepositoryHas(ParentExamples.AllParents.Count()))
                 .BDDfy();
         }

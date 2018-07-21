@@ -1,35 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Bubbio.Core.Exceptions;
+using Bubbio.Core.Helpers;
 using Bubbio.Core.Repository;
 using Bubbio.MongoDb.Documents.Entities;
 
 namespace Bubbio.Repository.MongoDb
 {
-    public class ParentUnitOfWork : IUnitOfWork<Parent, Guid>
+    public class ChildUnitOfWork : IUnitOfWork<Child, Guid>
     {
-        private readonly IRepository<Parent, Guid> _repository;
+        private readonly IRepository<Child, Guid> _repository;
 
-        public ParentUnitOfWork(IRepository<Parent, Guid> repository)
+        public ChildUnitOfWork(IRepository<Child, Guid> repository)
         {
             _repository = repository;
         }
 
         #region Create
 
-        /// <inheritdoc />
-        public async Task SaveAsync(Parent entity, CancellationToken token = default)
+        public async Task SaveAsync(Child entity, CancellationToken token = default)
         {
+            if (entity.ParentId.IsEmpty())
+                throw new InvalidForeignIdException<Guid>(typeof(Child), typeof(Parent));
+
             await _repository.InsertAsync(entity, token);
         }
 
         /// <inheritdoc />
-        public async Task SaveAsync(IEnumerable<Parent> entities, CancellationToken token = default)
+        public async Task SaveAsync(IEnumerable<Child> entities, CancellationToken token = default)
         {
-            await _repository.InsertManyAsync(entities, token);
+            var enumerable = entities.ToList();
+
+            if (enumerable.Any(c => c.ParentId.IsEmpty()))
+                throw new InvalidForeignIdException<Guid>(typeof(Child), typeof(Parent));
+
+            await _repository.InsertManyAsync(enumerable, token);
         }
 
         #endregion
@@ -37,15 +46,15 @@ namespace Bubbio.Repository.MongoDb
         #region Read
 
         /// <inheritdoc />
-        public async Task<Parent> GetAsync(Guid id, CancellationToken token = default)
+        public async Task<Child> GetAsync(Guid id, CancellationToken token = default)
         {
             if (!await AnyAsync(p => p.Id.Equals(id), token))
-                throw new DocumentNotFoundException<Guid>(typeof(Parent), id);
+                throw new DocumentNotFoundException<Guid>(typeof(Child), id);
             return await _repository.GetAsync(id, token);
         }
 
         /// <inheritdoc />
-        public async Task<Parent> GetAsync(Parent entity, CancellationToken token = default)
+        public async Task<Child> GetAsync(Child entity, CancellationToken token = default)
         {
             if (!await AnyAsync(p => p.Id.Equals(entity.Id), token))
                 throw new DocumentNotFoundException<Guid>(entity.GetType(), entity.Id);
@@ -53,33 +62,33 @@ namespace Bubbio.Repository.MongoDb
         }
 
         /// <inheritdoc />
-        public async Task<Parent> GetAsync(Expression<Func<Parent, bool>> predicate, CancellationToken token = default)
+        public async Task<Child> GetAsync(Expression<Func<Child, bool>> predicate, CancellationToken token = default)
         {
             if (!await AnyAsync(predicate, token))
-                throw new DocumentNotFoundException<Guid>(typeof(Parent));
+                throw new DocumentNotFoundException<Guid>(typeof(Child));
             return await _repository.GetAsync(predicate, token);
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<Parent>> GetManyAsync(Expression<Func<Parent, bool>> predicate,
+        public async Task<IEnumerable<Child>> GetManyAsync(Expression<Func<Child, bool>> predicate,
             CancellationToken token = default)
         {
             if (!await AnyAsync(predicate, token))
-                throw new DocumentNotFoundException<Guid>(typeof(IEnumerable<Parent>));
+                throw new DocumentNotFoundException<Guid>(typeof(IEnumerable<Child>));
             return await _repository.GetManyAsync(predicate, token);
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<Parent>> GetManyAsync(Expression<Func<Parent, bool>> predicate, int skip = 0,
+        public async Task<IEnumerable<Child>> GetManyAsync(Expression<Func<Child, bool>> predicate, int skip = 0,
             int take = 50, CancellationToken token = default)
         {
             if (!await AnyAsync(predicate, token))
-                throw new DocumentNotFoundException<Guid>(typeof(IEnumerable<Parent>));
+                throw new DocumentNotFoundException<Guid>(typeof(IEnumerable<Child>));
             return await _repository.GetManyAsync(predicate, skip, take, token);
         }
 
         /// <inheritdoc />
-        public async Task<bool> AnyAsync(Expression<Func<Parent, bool>> predicate, CancellationToken token = default)
+        public async Task<bool> AnyAsync(Expression<Func<Child, bool>> predicate, CancellationToken token = default)
         {
             return await _repository.AnyAsync(predicate, token);
         }
@@ -91,29 +100,29 @@ namespace Bubbio.Repository.MongoDb
         }
 
         /// <inheritdoc />
-        public async Task<long> CountAsync(Expression<Func<Parent, bool>> predicate, CancellationToken token = default)
+        public async Task<long> CountAsync(Expression<Func<Child, bool>> predicate, CancellationToken token = default)
         {
             return await _repository.CountAsync(predicate, token);
         }
 
         /// <inheritdoc />
-        public async Task<TProjection> ProjectAsync<TProjection>(Expression<Func<Parent, bool>> predicate,
-                Expression<Func<Parent, TProjection>> projection, CancellationToken token = default)
+        public async Task<TProjection> ProjectAsync<TProjection>(Expression<Func<Child, bool>> predicate,
+                Expression<Func<Child, TProjection>> projection, CancellationToken token = default)
             where TProjection : class
         {
             if (!await AnyAsync(predicate, token))
-                throw new DocumentNotFoundException<Guid>(typeof(Parent));
+                throw new DocumentNotFoundException<Guid>(typeof(Child));
             return await _repository.ProjectAsync(predicate, projection, token);
         }
 
         /// <inheritdoc />
         public async Task<IEnumerable<TProjection>> ProjectManyAsync<TProjection>(
-                Expression<Func<Parent, bool>> predicate,
-                Expression<Func<Parent, TProjection>> projection, CancellationToken token = default)
+                Expression<Func<Child, bool>> predicate, Expression<Func<Child, TProjection>> projection,
+                CancellationToken token = default)
             where TProjection : class
         {
             if (!await AnyAsync(predicate, token))
-                throw new DocumentNotFoundException<Guid>(typeof(IEnumerable<Parent>));
+                throw new DocumentNotFoundException<Guid>(typeof(IEnumerable<Child>));
             return await _repository.ProjectManyAsync(predicate, projection, token);
         }
 
@@ -122,21 +131,21 @@ namespace Bubbio.Repository.MongoDb
         #region Update
 
         /// <inheritdoc />
-        public async Task<bool> UpdateAsync(Parent updated, CancellationToken token = default)
+        public async Task<bool> UpdateAsync(Child updated, CancellationToken token = default)
         {
             return await _repository.UpdateAsync(updated, token);
         }
 
         /// <inheritdoc />
-        public async Task<bool> UpdateAsync<TField>(Parent toUpdate, Expression<Func<Parent, TField>> selector,
+        public async Task<bool> UpdateAsync<TField>(Child toUpdate, Expression<Func<Child, TField>> selector,
             TField value, CancellationToken token = default)
         {
             return await _repository.UpdateAsync(toUpdate, selector, value, token);
         }
 
         /// <inheritdoc />
-        public async Task<bool> UpdateAsync<TField>(Expression<Func<Parent, bool>> predicate,
-            Expression<Func<Parent, TField>> selector, TField value, CancellationToken token = default)
+        public async Task<bool> UpdateAsync<TField>(Expression<Func<Child, bool>> predicate,
+            Expression<Func<Child, TField>> selector, TField value, CancellationToken token = default)
         {
             if (await CountAsync(predicate, token) > 1)
                 throw new ManyDocumentsFoundException(RepositoryOperation.Update, typeof(Parent));
@@ -159,7 +168,7 @@ namespace Bubbio.Repository.MongoDb
         }
 
         /// <inheritdoc />
-        public async Task<long> DeleteAsync(Parent entity, CancellationToken token = default)
+        public async Task<long> DeleteAsync(Child entity, CancellationToken token = default)
         {
             var deleted = await _repository.DeleteAsync(entity, token);
 
@@ -170,7 +179,7 @@ namespace Bubbio.Repository.MongoDb
         }
 
         /// <inheritdoc />
-        public async Task<long> DeleteAsync(Expression<Func<Parent, bool>> predicate, CancellationToken token = default)
+        public async Task<long> DeleteAsync(Expression<Func<Child, bool>> predicate, CancellationToken token = default)
         {
             var count = await CountAsync(predicate, token);
 
@@ -183,7 +192,7 @@ namespace Bubbio.Repository.MongoDb
         }
 
         /// <inheritdoc />
-        public async Task<long> DeleteManyAsync(IEnumerable<Parent> entities, CancellationToken token = default)
+        public async Task<long> DeleteManyAsync(IEnumerable<Child> entities, CancellationToken token = default)
         {
             var deleted = await _repository.DeleteManyAsync(entities, token);
 
@@ -194,8 +203,7 @@ namespace Bubbio.Repository.MongoDb
         }
 
         /// <inheritdoc />
-        public async Task<long> DeleteManyAsync(Expression<Func<Parent, bool>> predicate,
-            CancellationToken token = default)
+        public async Task<long> DeleteManyAsync(Expression<Func<Child, bool>> predicate, CancellationToken token = default)
         {
             var deleted = await _repository.DeleteManyAsync(predicate, token);
 

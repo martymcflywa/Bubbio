@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Bubbio.Core.Repository;
 using Bubbio.MongoDb.Interfaces;
+using Bubbio.Tests.Core;
 using FluentAssertions;
 using MongoDB.Driver;
 
@@ -15,7 +16,7 @@ namespace Bubbio.MongoDb.Tests.Scenarios
         where TProject : class
     {
         private readonly IMongoDbRepository _repository;
-        private readonly MongoUrl _url = new MongoUrl("mongodb://localhost/test");
+        private readonly MongoUrl _url = new MongoUrl(TestConstants.MongoUrl);
         private readonly string _partitionKey;
 
         private TDocument _document;

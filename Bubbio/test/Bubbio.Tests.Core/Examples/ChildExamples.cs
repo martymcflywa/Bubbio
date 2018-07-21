@@ -14,6 +14,29 @@ namespace Bubbio.Tests.Core.Examples
         public static IEnumerable<Child> AllChildren { get; }
         public static Child OneChild => AllChildren.First();
 
+        public static IEnumerable<Child> AllUpdatedChildren =>
+            AllChildren.Select(c => new ChildBuilder()
+                .WithId(c.Id)
+                .WithCreated(c.Created)
+                .WithModified(c.Modified)
+                .WithParentId(c.ParentId)
+                .WithName(new Name
+                {
+                    First = "Updated",
+                    Last = "Child"
+                })
+                .Build());
+
+        public static Child OneUpdatedChild => AllUpdatedChildren.First();
+
+        public static IEnumerable<TestProjection> AllProjectedChildren =>
+            AllChildren.Select(c => new TestProjectionBuilder()
+                .WithId(c.Id)
+                .WithVersion(c.Version)
+                .Build());
+
+        public static TestProjection OneProjectedChild => AllProjectedChildren.First();
+
         static ChildExamples()
         {
             Ids = new List<Guid>

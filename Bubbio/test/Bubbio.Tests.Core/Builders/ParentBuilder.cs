@@ -21,6 +21,11 @@ namespace Bubbio.Tests.Core.Builders
             };
         }
 
+        public ParentBuilder(Parent parent)
+        {
+            _parent = parent;
+        }
+
         public ParentBuilder WithId(Guid id)
         {
             _parent.Id = id;

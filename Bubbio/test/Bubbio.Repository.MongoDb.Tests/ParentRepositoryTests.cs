@@ -4,6 +4,7 @@ using Bubbio.MongoDb;
 using Bubbio.MongoDb.Documents.Constants;
 using Bubbio.MongoDb.Documents.Entities;
 using Bubbio.Repository.MongoDb.Tests.Scenarios;
+using Bubbio.Tests.Core;
 using Bubbio.Tests.Core.Examples;
 using MongoDB.Driver;
 using TestStack.BDDfy;
@@ -13,7 +14,7 @@ namespace Bubbio.Repository.MongoDb.Tests
 {
     public class ParentRepositoryTests : RepositoryTestsBase<Parent, Guid, TestProjection>
     {
-        private static readonly MongoUrl Url = new MongoUrl("mongodb://localhost/test");
+        private static readonly MongoUrl Url = new MongoUrl(TestConstants.MongoUrl);
 
         public ParentRepositoryTests()
             : base(new MongoDbRepository(Url), Partitions.Parents.ToString())

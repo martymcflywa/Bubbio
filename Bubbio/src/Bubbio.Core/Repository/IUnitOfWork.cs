@@ -17,6 +17,14 @@ namespace Bubbio.Core.Repository
         #region Create
 
         /// <summary>
+        /// Async save one entity.
+        /// </summary>
+        /// <param name="entity">The entity to save.</param>
+        /// <param name="token">Optional cancellation token.</param>
+        /// <returns></returns>
+        Task SaveAsync(TEntity entity, CancellationToken token = default);
+
+        /// <summary>
         /// Async save many entities.
         /// </summary>
         /// <param name="entities">The entities to save.</param>

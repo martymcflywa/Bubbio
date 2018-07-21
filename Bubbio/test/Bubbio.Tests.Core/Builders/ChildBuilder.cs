@@ -27,9 +27,26 @@ namespace Bubbio.Tests.Core.Builders
             };
         }
 
+        public ChildBuilder(Child child)
+        {
+            _child = child;
+        }
+
         public ChildBuilder WithId(Guid id)
         {
             _child.Id = id;
+            return this;
+        }
+
+        public ChildBuilder WithCreated(DateTimeOffset created)
+        {
+            _child.Created = created;
+            return this;
+        }
+
+        public ChildBuilder WithModified(DateTimeOffset modified)
+        {
+            _child.Modified = modified;
             return this;
         }
 
