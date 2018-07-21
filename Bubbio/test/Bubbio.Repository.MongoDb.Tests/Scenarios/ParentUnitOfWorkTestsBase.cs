@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Bubbio.Core.Exceptions;
 using Bubbio.Core.Repository;
 using Bubbio.MongoDb.Documents.Constants;
 using Bubbio.MongoDb.Documents.Entities;
-using Bubbio.MongoDb.Documents.Events;
 using Bubbio.MongoDb.Interfaces;
 using Bubbio.Tests.Core.Examples;
 using FluentAssertions;
@@ -16,7 +16,8 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
     public abstract class ParentUnitOfWorkTestsBase
     {
         private readonly IRepository<Parent, Guid> _parentRepository;
-        private readonly UnitOfWork _unitOfWork;
+        private readonly INamedEntityUnitOfWork<Parent, Guid> _unitOfWork;
+
         private Parent _parent;
         private IEnumerable<Parent> _parents;
         private TestProjection _projectedParent;
@@ -28,8 +29,7 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         protected ParentUnitOfWorkTestsBase(IMongoDbRepository mongoDb)
         {
             _parentRepository = new Repository<Parent, Guid>(mongoDb, Partitions.Parents.ToString());
-            _unitOfWork = new UnitOfWork(_parentRepository, default(Repository<Child, Guid>),
-                default(Repository<Event, Guid>));
+            _unitOfWork = new ParentUnitOfWork(_parentRepository);
         }
 
         protected async Task RepositoryIsEmpty()
@@ -52,10 +52,10 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         #region Create
 
         protected async Task ParentIsSaved(string first, string last, string middle = null) =>
-            await _unitOfWork.SaveParentAsync(first, last, middle);
+            await _unitOfWork.SaveAsync(first, last, middle);
 
         protected async Task ParentsAreSaved(IEnumerable<Parent> parents) =>
-            await _unitOfWork.SaveParentsAsync(parents);
+            await _unitOfWork.SaveAsync(parents);
 
         #endregion
 
@@ -65,7 +65,7 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                _parent = await _unitOfWork.GetParentAsync(id);
+                _parent = await _unitOfWork.GetAsync(id);
             }
             catch (DocumentNotFoundException<Guid>) {}
         }
@@ -74,7 +74,7 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                _parent = await _unitOfWork.GetParentAsync(parent);
+                _parent = await _unitOfWork.GetAsync(parent);
             }
             catch (DocumentNotFoundException<Guid>) {}
         }
@@ -83,7 +83,7 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                _parent = await _unitOfWork.GetParentAsync(predicate);
+                _parent = await _unitOfWork.GetAsync(predicate);
             }
             catch (DocumentNotFoundException<Guid>) {}
             catch (InvalidOperationException) {}
@@ -93,7 +93,7 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                _parents = await _unitOfWork.GetParentsAsync(predicate);
+                _parents = await _unitOfWork.GetManyAsync(predicate, default(CancellationToken));
             }
             catch (DocumentNotFoundException<Guid>) {}
         }
@@ -102,23 +102,23 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                _parents = await _unitOfWork.GetParentsPagedAsync(predicate, skip, take);
+                _parents = await _unitOfWork.GetManyAsync(predicate, skip, take);
             }
             catch (DocumentNotFoundException<Guid>) {}
         }
 
         protected async Task CountAllParents() =>
-            _count = await _unitOfWork.CountParentsAsync();
+            _count = await _unitOfWork.CountAsync();
 
         protected async Task CountParentsByPredicate(Expression<Func<Parent, bool>> predicate) =>
-            _count = await _unitOfWork.CountParentsAsync(predicate);
+            _count = await _unitOfWork.CountAsync(predicate);
 
         protected async Task ProjectOneParent(Expression<Func<Parent, bool>> predicate,
             Expression<Func<Parent, TestProjection>> projection)
         {
             try
             {
-                _projectedParent = await _unitOfWork.ProjectParentAsync(predicate, projection);
+                _projectedParent = await _unitOfWork.ProjectAsync(predicate, projection);
             }
             catch (DocumentNotFoundException<Guid>) {}
             catch (InvalidOperationException) {}
@@ -129,7 +129,7 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                _projectedParents = await _unitOfWork.ProjectParentsAsync(predicate, projection);
+                _projectedParents = await _unitOfWork.ProjectManyAsync(predicate, projection);
             }
             catch (DocumentNotFoundException<Guid>) {}
         }
@@ -140,14 +140,14 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
 
         protected async Task UpdateOneParentByDocument(Parent updated)
         {
-            _updated = await _unitOfWork.UpdateParentAsync(updated);
+            _updated = await _unitOfWork.UpdateAsync(updated);
             await GetOneParentByDocument(updated);
         }
 
         protected async Task UpdateOneParentByFieldSelector<TField>(Parent toUpdate, Expression<Func<Parent, TField>> selector,
             TField value)
         {
-            _updated = await _unitOfWork.UpdateParentAsync(toUpdate, selector, value);
+            _updated = await _unitOfWork.UpdateAsync(toUpdate, selector, value);
             await GetOneParentByDocument(toUpdate);
         }
 
@@ -156,7 +156,7 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                _updated = await _unitOfWork.UpdateParentAsync(predicate, selector, value);
+                _updated = await _unitOfWork.UpdateAsync(predicate, selector, value);
                 await GetOneParentByPredicate(predicate);
             }
             catch (ManyDocumentsFoundException) {}
@@ -170,7 +170,7 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                _deleted = await _unitOfWork.DeleteParentAsync(id);
+                _deleted = await _unitOfWork.DeleteAsync(id);
             }
             catch (DocumentNotFoundException<Guid>) {}
         }
@@ -179,7 +179,7 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                _deleted = await _unitOfWork.DeleteParentAsync(parent);
+                _deleted = await _unitOfWork.DeleteAsync(parent);
             }
             catch (DocumentNotFoundException<Guid>) {}
         }
@@ -188,7 +188,7 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                _deleted = await _unitOfWork.DeleteParentAsync(predicate);
+                _deleted = await _unitOfWork.DeleteAsync(predicate);
             }
             catch (DocumentNotFoundException<Guid>) {}
             catch (ManyDocumentsFoundException) {}
@@ -198,7 +198,7 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                _deleted = await _unitOfWork.DeleteManyParentsAsync(parents);
+                _deleted = await _unitOfWork.DeleteManyAsync(parents);
             }
             catch (DocumentNotFoundException<Guid>) {}
         }
@@ -207,7 +207,7 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                _deleted = await _unitOfWork.DeleteManyParentsAsync(predicate);
+                _deleted = await _unitOfWork.DeleteManyAsync(predicate);
             }
             catch (DocumentNotFoundException<Guid>) {}
         }
@@ -227,7 +227,7 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
                 .Should().BeEquivalentTo(expected);
 
         protected async Task RepositoryHas(Expression<Func<Parent, bool>> predicate) =>
-            (await _unitOfWork.AnyParentAsync(predicate))
+            (await _unitOfWork.AnyAsync(predicate))
                 .Should().Be(true);
 
         protected void ParentIsFound(Parent expected) =>
