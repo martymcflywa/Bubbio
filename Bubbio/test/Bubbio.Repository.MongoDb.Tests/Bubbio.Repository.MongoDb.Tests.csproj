@@ -13,4 +13,10 @@
     <ProjectReference Include="..\..\src\Bubbio.Repository.MongoDb\Bubbio.Repository.MongoDb.csproj" />
     <ProjectReference Include="..\Bubbio.Tests.Core\Bubbio.Tests.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="xunit.runner.json" />
+    <Content Include="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

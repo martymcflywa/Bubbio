@@ -4,6 +4,7 @@
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Bubbio.MongoDb.Documents\Bubbio.MongoDb.Documents.csproj" />
     <ProjectReference Include="..\Bubbio.MongoDb\Bubbio.MongoDb.csproj" />
   </ItemGroup>
 </Project>

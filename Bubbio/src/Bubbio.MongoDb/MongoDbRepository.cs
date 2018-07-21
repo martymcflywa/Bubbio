@@ -57,7 +57,7 @@ namespace Bubbio.MongoDb
         {
             return await GetCollection<TDocument, TKey>(partitionKey)
                 .Find(doc => doc.Id.Equals(id))
-                .FirstOrDefaultAsync(token);
+                .SingleAsync(token);
         }
 
         /// <inheritdoc />
@@ -70,7 +70,7 @@ namespace Bubbio.MongoDb
         {
             return await GetCollection<TDocument, TKey>(partitionKey)
                 .Find(filter)
-                .FirstOrDefaultAsync(token);
+                .SingleAsync(token);
         }
 
         /// <inheritdoc />
@@ -151,7 +151,7 @@ namespace Bubbio.MongoDb
             return await GetCollection<TDocument, TKey>(partitionKey)
                 .Find(filter)
                 .Project(projection)
-                .FirstOrDefaultAsync(token);
+                .SingleAsync(token);
         }
 
         /// <inheritdoc />

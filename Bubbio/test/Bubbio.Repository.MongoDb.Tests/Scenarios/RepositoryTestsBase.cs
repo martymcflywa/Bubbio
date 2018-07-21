@@ -57,11 +57,23 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
 
         #region Read
 
-        protected async Task RepositoryGetsOneById(TKey id) =>
-            _document = await _repository.GetAsync(id);
+        protected async Task RepositoryGetsOneById(TKey id)
+        {
+            try
+            {
+                _document = await _repository.GetAsync(id);
+            }
+            catch (InvalidOperationException) {}
+        }
 
-        protected async Task RepositoryGetsOneByPredicate(Expression<Func<TDocument, bool>> predicate) =>
-            _document = await _repository.GetAsync(predicate);
+        protected async Task RepositoryGetsOneByPredicate(Expression<Func<TDocument, bool>> predicate)
+        {
+            try
+            {
+                _document = await _repository.GetAsync(predicate);
+            }
+            catch (InvalidOperationException) {}
+        }
 
         protected async Task RepositoryGetsMany(Expression<Func<TDocument, bool>> predicate) =>
             _documents = await _repository.GetManyAsync(predicate, default(CancellationToken));
@@ -80,8 +92,14 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
             _count = await _repository.CountAsync(predicate);
 
         protected async Task RepositoryProjectsOne(Expression<Func<TDocument, bool>> predicate,
-                Expression<Func<TDocument, TProject>> projection) =>
-            _projectedDocument = await _repository.ProjectAsync(predicate, projection);
+            Expression<Func<TDocument, TProject>> projection)
+        {
+            try
+            {
+                _projectedDocument = await _repository.ProjectAsync(predicate, projection);
+            }
+            catch (InvalidOperationException) {}
+        }
 
         protected async Task RepositoryProjectsMany(Expression<Func<TDocument, bool>> predicate,
                 Expression<Func<TDocument, TProject>> projection) =>
@@ -107,8 +125,12 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         protected async Task RepositoryIsUpdatedBy<TField>(Expression<Func<TDocument, bool>> predicate,
             Expression<Func<TDocument, TField>> selector, TField value)
         {
-            await _repository.UpdateAsync(predicate, selector, value);
-            _document = await _repository.GetAsync(predicate);
+            try
+            {
+                await _repository.UpdateAsync(predicate, selector, value);
+                _document = await _repository.GetAsync(predicate);
+            }
+            catch (InvalidOperationException) {}
         }
 
         #endregion
