@@ -140,10 +140,10 @@ namespace Bubbio.MongoDb
 
         /// <inheritdoc />
         public async Task<TProject> ProjectAsync<TDocument, TKey, TProject>(
-            Expression<Func<TDocument, bool>> filter,
-            Expression<Func<TDocument, TProject>> projection,
-            string partitionKey = null,
-            CancellationToken token = default)
+                Expression<Func<TDocument, bool>> filter,
+                Expression<Func<TDocument, TProject>> projection,
+                string partitionKey = null,
+                CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
             where TProject : class
@@ -156,10 +156,10 @@ namespace Bubbio.MongoDb
 
         /// <inheritdoc />
         public async Task<IEnumerable<TProject>> ProjectManyAsync<TDocument, TKey, TProject>(
-            Expression<Func<TDocument, bool>> filter,
-            Expression<Func<TDocument, TProject>> projection,
-            string partitionKey = null,
-            CancellationToken token = default)
+                Expression<Func<TDocument, bool>> filter,
+                Expression<Func<TDocument, TProject>> projection,
+                string partitionKey = null,
+                CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
             where TProject : class
@@ -175,16 +175,22 @@ namespace Bubbio.MongoDb
         #region Create
 
         /// <inheritdoc />
-        public async Task AddAsync<TDocument, TKey>(TDocument document, CancellationToken token = default)
+        public async Task AddAsync<TDocument, TKey>(
+                TDocument document,
+                string partitionKey = null,
+                CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            await GetCollection<TDocument, TKey>(document)
+            await GetCollection<TDocument, TKey>(document, partitionKey)
                 .InsertOneAsync(document, cancellationToken: token);
         }
 
         /// <inheritdoc />
-        public async Task AddAsync<TDocument, TKey>(IEnumerable<TDocument> documents, CancellationToken token = default)
+        public async Task AddAsync<TDocument, TKey>(
+                IEnumerable<TDocument> documents,
+                string partitionKey = null,
+                CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
@@ -193,7 +199,7 @@ namespace Bubbio.MongoDb
             if (!enumerable.Any())
                 return;
 
-            await GetCollection<TDocument, TKey>(enumerable.FirstOrDefault())
+            await GetCollection<TDocument, TKey>(enumerable.FirstOrDefault(), partitionKey)
                 .InsertManyAsync(enumerable, cancellationToken: token);
         }
 
@@ -204,11 +210,12 @@ namespace Bubbio.MongoDb
         /// <inheritdoc />
         public async Task<bool> UpdateAsync<TDocument, TKey>(
                 TDocument updated,
+                string partitionKey = null,
                 CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            var result = await GetCollection<TDocument, TKey>(updated)
+            var result = await GetCollection<TDocument, TKey>(updated, partitionKey)
                 .ReplaceOneAsync(
                     d => d.Id.Equals(updated.Id),
                     updated,
@@ -223,12 +230,13 @@ namespace Bubbio.MongoDb
                 TDocument toUpdate,
                 Expression<Func<TDocument, TField>> selector,
                 TField value,
+                string partitionKey = null,
                 CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
             var task = Builders<TDocument>.Update.Set(selector, value);
-            var result = await GetCollection<TDocument, TKey>(toUpdate)
+            var result = await GetCollection<TDocument, TKey>(toUpdate, partitionKey)
                 .UpdateOneAsync(d => d.Id.Equals(toUpdate.Id), task, cancellationToken: token);
 
             return result.ModifiedCount.Equals(1);
@@ -258,11 +266,12 @@ namespace Bubbio.MongoDb
         /// <inheritdoc />
         public async Task<long> DeleteAsync<TDocument, TKey>(
                 TDocument document,
+                string partitionKey = null,
                 CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            return (await GetCollection<TDocument, TKey>(document)
+            return (await GetCollection<TDocument, TKey>(document, partitionKey)
                     .DeleteOneAsync(d => d.Id.Equals(document.Id), token))
                 .DeletedCount;
         }
@@ -296,6 +305,7 @@ namespace Bubbio.MongoDb
         /// <inheritdoc />
         public async Task<long> DeleteManyAsync<TDocument, TKey>(
                 IEnumerable<TDocument> documents,
+                string partitionKey = null,
                 CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
@@ -305,13 +315,18 @@ namespace Bubbio.MongoDb
                 return 0;
 
             var idsToDelete = enumerable.Select(d => d.Id).ToList();
-            return (await GetCollection<TDocument, TKey>(enumerable.FirstOrDefault())
+            return (await GetCollection<TDocument, TKey>(enumerable.FirstOrDefault(), partitionKey)
                     .DeleteManyAsync(d => idsToDelete.Contains(d.Id), token))
                 .DeletedCount;
         }
 
         /// <inheritdoc />
-        public async Task<long> DeleteManyAsync<TDocument, TKey>(Expression<Func<TDocument, bool>> filter, string partitionKey = null, CancellationToken token = default) where TDocument : IDocument<TKey> where TKey : IEquatable<TKey>
+        public async Task<long> DeleteManyAsync<TDocument, TKey>(
+                Expression<Func<TDocument, bool>> filter,
+                string partitionKey = null,
+                CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>
         {
             return (await GetCollection<TDocument, TKey>(partitionKey)
                     .DeleteManyAsync(filter, token))
@@ -344,10 +359,15 @@ namespace Bubbio.MongoDb
         }
 
         /// <inheritdoc />
-        public IMongoCollection<TDocument> GetCollection<TDocument, TKey>(TDocument document)
+        public IMongoCollection<TDocument> GetCollection<TDocument, TKey>(
+                TDocument document,
+                string partitionKey = null)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
+            if (!partitionKey.IsEmpty())
+                return ResolvePartition<TDocument, TKey>(partitionKey);
+
             if (document is IPartitionDocument<TKey> partitionedDocument)
                 return ResolvePartition<TDocument, TKey>(partitionedDocument.PartitionKey);
 

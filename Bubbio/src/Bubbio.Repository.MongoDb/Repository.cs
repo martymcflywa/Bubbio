@@ -25,12 +25,12 @@ namespace Bubbio.Repository.MongoDb
 
         public async Task InsertAsync(TDocument entity, CancellationToken token = default)
         {
-            await _mongoDb.AddAsync<TDocument, TKey>(entity, token);
+            await _mongoDb.AddAsync<TDocument, TKey>(entity, _partitionKey, token);
         }
 
         public async Task InsertManyAsync(IEnumerable<TDocument> entities, CancellationToken token = default)
         {
-            await _mongoDb.AddAsync<TDocument, TKey>(entities, token);
+            await _mongoDb.AddAsync<TDocument, TKey>(entities, _partitionKey, token);
         }
 
         #endregion
@@ -75,7 +75,8 @@ namespace Bubbio.Repository.MongoDb
             return await _mongoDb.CountAsync<TDocument, TKey>(_partitionKey, token);
         }
 
-        public async Task<long> CountAsync(Expression<Func<TDocument, bool>> predicate, CancellationToken token = default)
+        public async Task<long> CountAsync(Expression<Func<TDocument, bool>> predicate,
+            CancellationToken token = default)
         {
             return await _mongoDb.CountAsync<TDocument, TKey>(predicate, _partitionKey, token);
         }
@@ -103,13 +104,13 @@ namespace Bubbio.Repository.MongoDb
 
         public async Task<bool> UpdateAsync(TDocument updated, CancellationToken token = default)
         {
-            return await _mongoDb.UpdateAsync<TDocument, TKey>(updated, token);
+            return await _mongoDb.UpdateAsync<TDocument, TKey>(updated, _partitionKey, token);
         }
 
         public async Task<bool> UpdateAsync<TField>(TDocument toUpdate, Expression<Func<TDocument, TField>> selector,
             TField value, CancellationToken token = default)
         {
-            return await _mongoDb.UpdateAsync<TDocument, TKey, TField>(toUpdate, selector, value, token);
+            return await _mongoDb.UpdateAsync<TDocument, TKey, TField>(toUpdate, selector, value, _partitionKey, token);
         }
 
         public async Task<bool> UpdateAsync<TField>(Expression<Func<TDocument, bool>> predicate,
@@ -125,7 +126,7 @@ namespace Bubbio.Repository.MongoDb
 
         public async Task<long> DeleteAsync(TDocument entity, CancellationToken token = default)
         {
-            return await _mongoDb.DeleteAsync<TDocument, TKey>(entity, token);
+            return await _mongoDb.DeleteAsync<TDocument, TKey>(entity, _partitionKey, token);
         }
 
         public async Task<long> DeleteAsync(TKey id, CancellationToken token = default)
@@ -141,7 +142,7 @@ namespace Bubbio.Repository.MongoDb
 
         public async Task<long> DeleteManyAsync(IEnumerable<TDocument> entities, CancellationToken token = default)
         {
-            return await _mongoDb.DeleteManyAsync<TDocument, TKey>(entities, token);
+            return await _mongoDb.DeleteManyAsync<TDocument, TKey>(entities, _partitionKey, token);
         }
 
         public async Task<long> DeleteManyAsync(Expression<Func<TDocument, bool>> predicate,

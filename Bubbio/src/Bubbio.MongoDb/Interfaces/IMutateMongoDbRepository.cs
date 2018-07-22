@@ -15,12 +15,14 @@ namespace Bubbio.MongoDb.Interfaces
         /// Async add one document to the collection.
         /// </summary>
         /// <param name="document">The document to add.</param>
+        /// <param name="partitionKey">Optional partition key.</param>
         /// <param name="token">Optional cancellation token.</param>
         /// <typeparam name="TDocument">The document type.</typeparam>
         /// <typeparam name="TKey">The primary key type.</typeparam>
         /// <returns></returns>
         Task AddAsync<TDocument, TKey>(
                 TDocument document,
+                string partitionKey = null,
                 CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>;
@@ -29,12 +31,14 @@ namespace Bubbio.MongoDb.Interfaces
         /// Async add many documents to the collection.
         /// </summary>
         /// <param name="documents">The documents to add.</param>
+        /// <param name="partitionKey">Optional partition key.</param>
         /// <param name="token">Optional cancellation token.</param>
         /// <typeparam name="TDocument">The document type.</typeparam>
         /// <typeparam name="TKey">The primary key type.</typeparam>
         /// <returns></returns>
         Task AddAsync<TDocument, TKey>(
                 IEnumerable<TDocument> documents,
+                string partitionKey = null,
                 CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>;
@@ -47,12 +51,14 @@ namespace Bubbio.MongoDb.Interfaces
         /// Async update one document in the collection.
         /// </summary>
         /// <param name="updated">The updated document.</param>
+        /// <param name="partitionKey">Optional partition key.</param>
         /// <param name="token">Optional cancellation token.</param>
         /// <typeparam name="TDocument">The document type.</typeparam>
         /// <typeparam name="TKey">The primary key type.</typeparam>
         /// <returns></returns>
         Task<bool> UpdateAsync<TDocument, TKey>(
                 TDocument updated,
+                string partitionKey = null,
                 CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>;
@@ -63,6 +69,7 @@ namespace Bubbio.MongoDb.Interfaces
         /// <param name="toUpdate">The document to update.</param>
         /// <param name="selector">The linq expression field selector.</param>
         /// <param name="value">The new value of selected field.</param>
+        /// <param name="partitionKey">Optional partition key.</param>
         /// <param name="token">Optional cancellation token.</param>
         /// <typeparam name="TDocument">The document type.</typeparam>
         /// <typeparam name="TKey">The primary key type.</typeparam>
@@ -72,6 +79,7 @@ namespace Bubbio.MongoDb.Interfaces
                 TDocument toUpdate,
                 Expression<Func<TDocument, TField>> selector,
                 TField value,
+                string partitionKey = null,
                 CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>;
@@ -106,11 +114,15 @@ namespace Bubbio.MongoDb.Interfaces
         /// Async delete one document.
         /// </summary>
         /// <param name="document">The document to delete.</param>
+        /// <param name="partitionKey">Optional partition key.</param>
         /// <param name="token">Optional cancellation token.</param>
         /// <typeparam name="TDocument">The document type.</typeparam>
         /// <typeparam name="TKey">The primary key type.</typeparam>
         /// <returns></returns>
-        Task<long> DeleteAsync<TDocument, TKey>(TDocument document, CancellationToken token = default)
+        Task<long> DeleteAsync<TDocument, TKey>(
+                TDocument document,
+                string partitionKey = null,
+                CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>;
 
@@ -150,12 +162,14 @@ namespace Bubbio.MongoDb.Interfaces
         /// Async delete many documents.
         /// </summary>
         /// <param name="documents">The documents to delete.</param>
+        /// <param name="partitionKey">Optional partition key.</param>
         /// <param name="token">Optional cancellation token.</param>
         /// <typeparam name="TDocument">The document type.</typeparam>
         /// <typeparam name="TKey">The primary key type.</typeparam>
         /// <returns></returns>
         Task<long> DeleteManyAsync<TDocument, TKey>(
                 IEnumerable<TDocument> documents,
+                string partitionKey = null,
                 CancellationToken token = default)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>;

@@ -25,10 +25,11 @@ namespace Bubbio.MongoDb.Interfaces
         /// otherwise just return the collection.
         /// </summary>
         /// <param name="document">The document, which may or may not be partitioned.</param>
+        /// <param name="partitionKey">Optional partition key.</param>
         /// <typeparam name="TDocument">The document type.</typeparam>
         /// <typeparam name="TKey">The primary key type.</typeparam>
         /// <returns></returns>
-        IMongoCollection<TDocument> GetCollection<TDocument, TKey>(TDocument document)
+        IMongoCollection<TDocument> GetCollection<TDocument, TKey>(TDocument document, string partitionKey = null)
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>;
 
