@@ -1,13 +1,18 @@
 ﻿using System;
-using Bubbio.Core.Contracts;
+using System.Reflection;
 
 namespace Bubbio.Core.Exceptions
 {
     public class InvalidForeignIdException<TKey> : Exception
         where TKey : IEquatable<TKey>
     {
-        public InvalidForeignIdException(Type primaryType, Type foreignType)
-            : base($"{primaryType} has invalid foreign key for {foreignType}")
+        public InvalidForeignIdException(MemberInfo primaryType, MemberInfo foreignType)
+            : base($"{primaryType.Name} has invalid foreign key for {foreignType.Name}")
+        {
+        }
+
+        public InvalidForeignIdException(MemberInfo primaryType, MemberInfo foreignType, TKey foreignId)
+            : base($"{primaryType.Name} is linked to {foreignType.Name} {foreignId} which does not exist")
         {
         }
     }

@@ -20,7 +20,7 @@ namespace Bubbio.Repository.MongoDb.Tests
         private static readonly IMongoDbRepository MongoDb = new MongoDbRepository(Url);
         private static readonly IRepository<Child, Guid> Repository =
             new Repository<Child, Guid>(MongoDb, Partitions.Children.ToString());
-        private static readonly IUnitOfWork<Child, Guid> UnitOfWork = new ChildUnitOfWork(Repository);
+        private static readonly IUnitOfWork<Child, Guid> UnitOfWork = new UnitOfWork<Child, Guid>(Repository);
 
         public ChildUnitOfWorkTests()
             : base(Repository, UnitOfWork)

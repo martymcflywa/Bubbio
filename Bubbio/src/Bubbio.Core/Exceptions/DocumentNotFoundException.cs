@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using Bubbio.Core.Repository;
 
 namespace Bubbio.Core.Exceptions
@@ -9,17 +10,17 @@ namespace Bubbio.Core.Exceptions
         private const string ErrorMessage = "not found in collection";
 
         public DocumentNotFoundException(IDocument<TKey> document)
-            : base($"{document.GetType()} {ErrorMessage}")
+            : base($"{document.GetType().Name} {ErrorMessage}")
         {
         }
 
-        public DocumentNotFoundException(Type documentType)
-            : base($"{documentType} {ErrorMessage}")
+        public DocumentNotFoundException(MemberInfo documentType)
+            : base($"{documentType.Name} {ErrorMessage}")
         {
         }
 
-        public DocumentNotFoundException(Type documentType, TKey id)
-            : base($"{documentType} with {id} {ErrorMessage}")
+        public DocumentNotFoundException(MemberInfo documentType, TKey id)
+            : base($"{documentType.Name} with {id} {ErrorMessage}")
         {
         }
     }
