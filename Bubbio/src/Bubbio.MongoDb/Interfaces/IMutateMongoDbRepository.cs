@@ -143,22 +143,6 @@ namespace Bubbio.MongoDb.Interfaces
             where TKey : IEquatable<TKey>;
 
         /// <summary>
-        /// Async delete one document by a linq predicate filter.
-        /// </summary>
-        /// <param name="filter">The linq predicate filter.</param>
-        /// <param name="partitionKey">Optional partition key.</param>
-        /// <param name="token">Optional cancellation token.</param>
-        /// <typeparam name="TDocument">The document type.</typeparam>
-        /// <typeparam name="TKey">The primary key type.</typeparam>
-        /// <returns></returns>
-        Task<long> DeleteAsync<TDocument, TKey>(
-                Expression<Func<TDocument, bool>> filter,
-                string partitionKey = null,
-                CancellationToken token = default)
-            where TDocument : IDocument<TKey>
-            where TKey : IEquatable<TKey>;
-
-        /// <summary>
         /// Async delete many documents.
         /// </summary>
         /// <param name="documents">The documents to delete.</param>

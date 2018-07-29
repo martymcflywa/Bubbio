@@ -24,4 +24,19 @@ namespace Bubbio.Core.Exceptions
         {
         }
     }
+
+    public class DocumentNotFoundException : DocumentNotFoundException<Guid>
+    {
+        public DocumentNotFoundException(IDocument<Guid> document) : base(document)
+        {
+        }
+
+        public DocumentNotFoundException(MemberInfo documentType) : base(documentType)
+        {
+        }
+
+        public DocumentNotFoundException(MemberInfo documentType, Guid id) : base(documentType, id)
+        {
+        }
+    }
 }

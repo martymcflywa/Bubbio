@@ -44,7 +44,7 @@ namespace Bubbio.Tests.Core.Builders
             return this;
         }
 
-        public ParentBuilder WithName(Name name)
+        public ParentBuilder WithName(IName name)
         {
             _parent.Name = name;
             return this;

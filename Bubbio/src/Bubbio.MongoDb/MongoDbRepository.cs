@@ -215,6 +215,7 @@ namespace Bubbio.MongoDb
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
+            updated.Modified = DateTimeOffset.UtcNow;
             var result = await GetCollection<TDocument, TKey>(updated, partitionKey)
                 .ReplaceOneAsync(
                     d => d.Id.Equals(updated.Id),
@@ -222,7 +223,7 @@ namespace Bubbio.MongoDb
                     new UpdateOptions {IsUpsert = true},
                     token);
 
-            return result.ModifiedCount.Equals(1);
+            return result.ModifiedCount > 0;
         }
 
         /// <inheritdoc />
@@ -235,11 +236,15 @@ namespace Bubbio.MongoDb
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            var task = Builders<TDocument>.Update.Set(selector, value);
+            var task = Builders<TDocument>
+                .Update
+                .Set(selector, value)
+                .Set(d => d.Modified, DateTimeOffset.UtcNow);
+
             var result = await GetCollection<TDocument, TKey>(toUpdate, partitionKey)
                 .UpdateOneAsync(d => d.Id.Equals(toUpdate.Id), task, cancellationToken: token);
 
-            return result.ModifiedCount.Equals(1);
+            return result.ModifiedCount > 0;
         }
 
         /// <inheritdoc />
@@ -252,11 +257,18 @@ namespace Bubbio.MongoDb
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            var task = Builders<TDocument>.Update.Set(selector, value);
+            if (await CountAsync<TDocument, TKey>(filter, partitionKey, token) > 1)
+                throw new InvalidOperationException("Sequence contains more than one element");
+
+            var task = Builders<TDocument>
+                .Update
+                .Set(selector, value)
+                .Set(d => d.Modified, DateTimeOffset.UtcNow);
+
             var result = await GetCollection<TDocument, TKey>(partitionKey)
                 .UpdateOneAsync(filter, task, cancellationToken: token);
 
-            return result.ModifiedCount.Equals(1);
+            return result.ModifiedCount > 0;
         }
 
         #endregion
@@ -271,9 +283,11 @@ namespace Bubbio.MongoDb
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            return (await GetCollection<TDocument, TKey>(document, partitionKey)
-                    .DeleteOneAsync(d => d.Id.Equals(document.Id), token))
-                .DeletedCount;
+            var result = await GetCollection<TDocument, TKey>(document, partitionKey)
+                .FindOneAndDeleteAsync(d => d.Id.Equals(document.Id),
+                    default, token);
+
+            return result == null ? 0 : 1;
         }
 
         /// <inheritdoc />
@@ -284,22 +298,10 @@ namespace Bubbio.MongoDb
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            return (await GetCollection<TDocument, TKey>(partitionKey)
-                    .DeleteOneAsync(d => d.Id.Equals(id), token))
-                .DeletedCount;
-        }
+            var result = await GetCollection<TDocument, TKey>(partitionKey)
+                .FindOneAndDeleteAsync(d => d.Id.Equals(id), default, token);
 
-        /// <inheritdoc />
-        public async Task<long> DeleteAsync<TDocument, TKey>(
-                Expression<Func<TDocument, bool>> filter,
-                string partitionKey = null,
-                CancellationToken token = default)
-            where TDocument : IDocument<TKey>
-            where TKey : IEquatable<TKey>
-        {
-            return (await GetCollection<TDocument, TKey>(partitionKey)
-                    .DeleteOneAsync(filter, token))
-                .DeletedCount;
+            return result == null ? 0 : 1;
         }
 
         /// <inheritdoc />

@@ -16,13 +16,9 @@ namespace Bubbio.Tests.Core.Examples
         public static IEnumerable<Parent> AllUpdatedParents =>
             AllParents.Select(p => new ParentBuilder()
                 .WithId(p.Id)
-                .WithCreated(p.Created)
+                .WithCreated(p.Created.AddMinutes(30))
                 .WithModified(p.Modified)
-                .WithName(new Name
-                {
-                    First = "Updated",
-                    Last = "Parent"
-                })
+                .WithName(p.Name)
                 .Build());
 
         public static Parent OneUpdatedParent => AllUpdatedParents.First();

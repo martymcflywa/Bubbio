@@ -1,242 +1,392 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Threading;
 using System.Threading.Tasks;
 using Bubbio.Core.Exceptions;
 using Bubbio.Core.Repository;
+using Bubbio.MongoDb;
+using Bubbio.MongoDb.Documents.Constants;
+using Bubbio.MongoDb.Documents.Entities;
+using Bubbio.MongoDb.Documents.Events;
+using Bubbio.Tests.Core;
 using Bubbio.Tests.Core.Examples;
 using FluentAssertions;
+using MongoDB.Driver;
 
 namespace Bubbio.Repository.MongoDb.Tests.Scenarios
 {
-    public abstract class UnitOfWorkTestsBase<TDocument, TKey>
-        where TDocument : IDocument<TKey>
-        where TKey : IEquatable<TKey>
+    public abstract class UnitOfWorkTestsBase
     {
-        private readonly IRepository<TDocument, TKey> _repository;
-        private readonly IUnitOfWork<TDocument, TKey> _unitOfWork;
+        private readonly IRepository<Parent, Guid> _parentRepository;
+        private readonly IRepository<Child, Guid> _childRepository;
+        private readonly IRepository<Event, Guid> _eventRepository;
 
-        private TDocument _document;
-        private IEnumerable<TDocument> _documents;
+        private readonly UnitOfWork _unitOfWork;
+
+        private IDocument<Guid> _document;
+        private IEnumerable<IDocument<Guid>> _documents;
+
         private TestProjection _projection;
         private IEnumerable<TestProjection> _projections;
+
+        private bool _any;
         private long _count;
         private bool _updated;
         private long _deleted;
 
-        protected UnitOfWorkTestsBase(IRepository<TDocument, TKey> repository, IUnitOfWork<TDocument, TKey> unitOfWork)
+        protected UnitOfWorkTestsBase()
         {
-            _repository = repository;
-            _unitOfWork = unitOfWork;
+            var mongoDb = new MongoDbRepository(new MongoUrl(TestConstants.UnitOfWorkUrl));
+            _parentRepository = new Repository<Parent, Guid>(mongoDb, Partitions.Parents.ToString());
+            _childRepository = new Repository<Child, Guid>(mongoDb, Partitions.Children.ToString());
+            _eventRepository = new Repository<Event, Guid>(mongoDb, Partitions.Events.ToString());
+            _unitOfWork = new UnitOfWork(_parentRepository, _childRepository, _eventRepository);
         }
 
-        protected async Task RepositoryIsEmpty()
+        #region Setup
+
+        protected async Task RepositoriesAreEmpty()
         {
-            await _repository.DropAsync();
+            await _parentRepository.DropAsync();
+            await _childRepository.DropAsync();
+            await _eventRepository.DropAsync();
         }
 
-        protected async Task RepositoryContains(TDocument document)
+        protected async Task RepositoryContains(IDocument<Guid> document)
         {
-            await RepositoryIsEmpty();
-            await _repository.InsertAsync(document);
+            await RepositoriesAreEmpty();
+
+            if (document == null)
+                return;
+
+            switch (document)
+            {
+                case Parent parent:
+                    await _parentRepository.InsertAsync(parent);
+                    break;
+                case Child child:
+                    await _childRepository.InsertAsync(child);
+                    break;
+                case Event @event:
+                    await _eventRepository.InsertAsync(@event);
+                    break;
+            }
         }
 
-        protected async Task RepositoryContains(IEnumerable<TDocument> documents)
+        protected async Task RepositoryContains(IEnumerable<IDocument<Guid>> documents)
         {
-            await RepositoryIsEmpty();
-            await _repository.InsertManyAsync(documents);
+            await RepositoriesAreEmpty();
+
+            if (documents == null)
+                return;
+
+            foreach (var document in documents)
+            {
+                switch (document)
+                {
+                    case Parent parent:
+                        await _parentRepository.InsertAsync(parent);
+                        break;
+                    case Child child:
+                        await _childRepository.InsertAsync(child);
+                        break;
+                    case Event @event:
+                        await _eventRepository.InsertAsync(@event);
+                        break;
+                }
+            }
         }
+
+        #endregion
 
         #region Create
 
-        protected async Task SaveOne(TDocument document) =>
-            await _unitOfWork.SaveAsync(document);
+        protected async Task InsertOne(IDocument<Guid> document)
+        {
+            try
+            {
+                await _unitOfWork.InsertAsync(document);
+            }
+            catch (InvalidForeignIdException) {}
+        }
 
-        protected async Task SaveMany(IEnumerable<TDocument> documents) =>
-            await _unitOfWork.SaveAsync(documents);
+        protected async Task InsertMany(IEnumerable<IDocument<Guid>> documents)
+        {
+            try
+            {
+                await _unitOfWork.InsertManyAsync(documents);
+            }
+            catch (InvalidForeignIdException) {}
+        }
 
         #endregion
 
         #region Read
 
-        protected async Task GetOne(TKey id)
+        protected async Task Any(Type type, Expression<Func<IDocument<Guid>, bool>> predicate)
+        {
+            if (type == typeof(Parent))
+                _any = await _unitOfWork.AnyAsync<Parent>(predicate);
+            if (type == typeof(Child))
+                _any = await _unitOfWork.AnyAsync<Child>(predicate);
+            if (type.BaseType == typeof(Event))
+                _any = await _unitOfWork.AnyAsync<Event>(predicate);
+        }
+
+        protected async Task GetOne(Type type, Guid id)
         {
             try
             {
-                _document = await _unitOfWork.GetAsync(id);
+                if (type == typeof(Parent))
+                    _document = await _unitOfWork.GetAsync<Parent>(id);
+                if (type == typeof(Child))
+                    _document = await _unitOfWork.GetAsync<Child>(id);
+                if (type.BaseType == typeof(Event))
+                    _document = await _unitOfWork.GetAsync<Event>(id);
             }
-            catch (DocumentNotFoundException<TKey>) {}
+            catch (DocumentNotFoundException) {}
+            catch (InvalidOperationException) {}
         }
 
-        protected async Task GetOne(TDocument document)
+        protected async Task GetOne(IDocument<Guid> document)
         {
             try
             {
                 _document = await _unitOfWork.GetAsync(document);
             }
-            catch (DocumentNotFoundException<TKey>) {}
-        }
-
-        protected async Task GetOne(Expression<Func<TDocument, bool>> predicate)
-        {
-            try
-            {
-                _document = await _unitOfWork.GetAsync(predicate);
-            }
-            catch (DocumentNotFoundException<TKey>) {}
+            catch (DocumentNotFoundException) {}
             catch (InvalidOperationException) {}
         }
 
-        protected async Task GetMany(Expression<Func<TDocument, bool>> predicate)
+        protected async Task GetOne(Type type, Expression<Func<IDocument<Guid>, bool>> predicate)
         {
             try
             {
-                _documents = await _unitOfWork.GetManyAsync(predicate, default(CancellationToken));
+                if (type == typeof(Parent))
+                    _document = await _unitOfWork.GetAsync<Parent>(predicate);
+                if (type == typeof(Child))
+                    _document = await _unitOfWork.GetAsync<Child>(predicate);
+                if (type.BaseType == typeof(Event))
+                    _document = await _unitOfWork.GetAsync<Event>(predicate);
             }
-            catch (DocumentNotFoundException<TKey>) {}
-        }
-
-        protected async Task GetManyPaged(Expression<Func<TDocument, bool>> predicate, int skip, int take)
-        {
-            try
-            {
-                _documents = await _unitOfWork.GetManyAsync(predicate, skip, take);
-            }
-            catch (DocumentNotFoundException<TKey>) {}
-        }
-
-        protected async Task Count() =>
-            _count = await _unitOfWork.CountAsync();
-
-        protected async Task Count(Expression<Func<TDocument, bool>> predicate) =>
-            _count = await _unitOfWork.CountAsync(predicate);
-
-        protected async Task ProjectOne(Expression<Func<TDocument, bool>> predicate,
-            Expression<Func<TDocument, TestProjection>> projection)
-        {
-            try
-            {
-                _projection = await _unitOfWork.ProjectAsync(predicate, projection);
-            }
-            catch (DocumentNotFoundException<TKey>) {}
+            catch (DocumentNotFoundException) {}
             catch (InvalidOperationException) {}
         }
 
-        protected async Task ProjectMany(Expression<Func<TDocument, bool>> predicate,
-            Expression<Func<TDocument, TestProjection>> projection)
+        protected async Task GetMany(Type type, Expression<Func<IDocument<Guid>, bool>> predicate)
         {
             try
             {
-                _projections = await _unitOfWork.ProjectManyAsync(predicate, projection);
+                if (type == typeof(Parent))
+                    _documents = await _unitOfWork.GetManyAsync<Parent>(predicate, default);
+                if (type == typeof(Child))
+                    _documents = await _unitOfWork.GetManyAsync<Child>(predicate, default);
+                if (type.BaseType == typeof(Event))
+                    _documents = await _unitOfWork.GetManyAsync<Event>(predicate, default);
             }
-            catch (DocumentNotFoundException<TKey>) {}
+            catch (DocumentNotFoundException) {}
+        }
+
+        protected async Task GetManyPaged(Type type, Expression<Func<IDocument<Guid>, bool>> predicate, int skip,
+            int take)
+        {
+            try
+            {
+                if (type == typeof(Parent))
+                    _documents = await _unitOfWork.GetManyAsync<Parent>(predicate, skip, take);
+                if (type == typeof(Child))
+                    _documents = await _unitOfWork.GetManyAsync<Child>(predicate, skip, take);
+                if (type.BaseType == typeof(Event))
+                    _documents = await _unitOfWork.GetManyAsync<Event>(predicate, skip, take);
+            }
+            catch (DocumentNotFoundException) {}
+        }
+
+        protected async Task Count(Type type)
+        {
+            if (type == typeof(Parent))
+                _count = await _unitOfWork.CountAsync<Parent>();
+            if (type == typeof(Child))
+                _count = await _unitOfWork.CountAsync<Child>();
+            if (type.BaseType == typeof(Event))
+                _count = await _unitOfWork.CountAsync<Event>();
+        }
+
+        protected async Task Count(Type type, Expression<Func<IDocument<Guid>, bool>> predicate)
+        {
+            if (type == typeof(Parent))
+                _count = await _unitOfWork.CountAsync<Parent>(predicate);
+            if (type == typeof(Child))
+                _count = await _unitOfWork.CountAsync<Child>(predicate);
+            if (type.BaseType == typeof(Event))
+                _count = await _unitOfWork.CountAsync<Event>(predicate);
+        }
+
+        protected async Task ProjectOne(Type type, Expression<Func<IDocument<Guid>, bool>> predicate,
+            Expression<Func<IDocument<Guid>, TestProjection>> projection)
+        {
+            try
+            {
+                if (type == typeof(Parent))
+                    _projection = await _unitOfWork.ProjectOneAsync<Parent, TestProjection>(predicate, projection);
+                if (type == typeof(Child))
+                    _projection = await _unitOfWork.ProjectOneAsync<Child, TestProjection>(predicate, projection);
+                if (type.BaseType == typeof(Event))
+                    _projection = await _unitOfWork.ProjectOneAsync<Event, TestProjection>(predicate, projection);
+            }
+            catch (DocumentNotFoundException) {}
+            catch (InvalidOperationException) {}
+        }
+
+        protected async Task ProjectMany(Type type, Expression<Func<IDocument<Guid>, bool>> predicate,
+            Expression<Func<IDocument<Guid>, TestProjection>> projection)
+        {
+            try
+            {
+                if (type == typeof(Parent))
+                    _projections = await _unitOfWork.ProjectManyAsync<Parent, TestProjection>(predicate, projection);
+                if (type == typeof(Child))
+                    _projections = await _unitOfWork.ProjectManyAsync<Child, TestProjection>(predicate, projection);
+                if (type.BaseType == typeof(Event))
+                    _projections = await _unitOfWork.ProjectManyAsync<Event, TestProjection>(predicate, projection);
+            }
+            catch (DocumentNotFoundException) {}
         }
 
         #endregion
 
         #region Update
 
-        protected async Task Update(TDocument updated)
-        {
-            _updated = await _unitOfWork.UpdateAsync(updated);
-            await GetOne(updated);
-        }
-
-        protected async Task Update<TField>(TDocument toUpdate, Expression<Func<TDocument, TField>> selector,
-            TField value)
-        {
-            _updated = await _unitOfWork.UpdateAsync(toUpdate, selector, value);
-            await GetOne(toUpdate);
-        }
-
-        protected async Task Update<TField>(Expression<Func<TDocument, bool>> predicate,
-            Expression<Func<TDocument, TField>> selector, TField value)
+        protected async Task UpdateOne(IDocument<Guid> updated)
         {
             try
             {
-                _updated = await _unitOfWork.UpdateAsync(predicate, selector, value);
-                await GetOne(predicate);
+                _updated = await _unitOfWork.UpdateAsync(updated);
             }
-            catch (ManyDocumentsFoundException) {}
+            catch (InvalidOperationException) {}
+        }
+
+        protected async Task UpdateOne<TField>(IDocument<Guid> toUpdate,
+            Expression<Func<IDocument<Guid>, TField>> selector, TField value)
+        {
+            _updated = await _unitOfWork.UpdateAsync(toUpdate, selector, value);
+        }
+
+        protected async Task UpdateOne<TField>(Type type, Expression<Func<IDocument<Guid>, bool>> predicate,
+                Expression<Func<IDocument<Guid>, TField>> selector, TField value)
+        {
+            try
+            {
+                if (type == typeof(Parent))
+                    _updated = await _unitOfWork.UpdateAsync<Parent, TField>(predicate, selector, value);
+                if (type == typeof(Child))
+                    _updated = await _unitOfWork.UpdateAsync<Child, TField>(predicate, selector, value);
+                if (type.BaseType == typeof(Event))
+                    _updated = await _unitOfWork.UpdateAsync<Event, TField>(predicate, selector, value);
+            }
+            catch (InvalidOperationException) {}
         }
 
         #endregion
 
         #region Delete
 
-        protected async Task Delete(TKey id)
+        protected async Task DeleteOne(Type type, Guid id, bool cascade = default)
         {
-            try
-            {
-                _deleted = await _unitOfWork.DeleteAsync(id);
-            }
-            catch (DocumentNotFoundException<TKey>) {}
+            if (type == typeof(Parent))
+                _deleted = await _unitOfWork.DeleteAsync<Parent>(id, cascade);
+            if (type == typeof(Child))
+                _deleted = await _unitOfWork.DeleteAsync<Child>(id, cascade);
+            if (type.BaseType == typeof(Event))
+                _deleted = await _unitOfWork.DeleteAsync<Event>(id, cascade);
         }
 
-        protected async Task Delete(TDocument document)
-        {
-            try
-            {
-                _deleted = await _unitOfWork.DeleteAsync(document);
-            }
-            catch (DocumentNotFoundException<TKey>) {}
-        }
+        protected async Task DeleteOne(IDocument<Guid> document, bool cascade = default) =>
+            _deleted = await _unitOfWork.DeleteAsync(document, cascade);
 
-        protected async Task Delete(Expression<Func<TDocument, bool>> predicate)
-        {
-            try
-            {
-                _deleted = await _unitOfWork.DeleteAsync(predicate);
-            }
-            catch (DocumentNotFoundException<TKey>) {}
-            catch (ManyDocumentsFoundException) {}
-        }
+        protected async Task DeleteMany(IEnumerable<IDocument<Guid>> documents, bool cascade = default) =>
+            _deleted = await _unitOfWork.DeleteManyAsync(documents, cascade);
 
-        protected async Task DeleteMany(IEnumerable<TDocument> documents)
+        protected async Task DeleteMany(Type type, Expression<Func<IDocument<Guid>, bool>> predicate,
+            bool cascade = default)
         {
-            try
-            {
-                _deleted = await _unitOfWork.DeleteManyAsync(documents);
-            }
-            catch (DocumentNotFoundException<TKey>) {}
-        }
-
-        protected async Task DeleteMany(Expression<Func<TDocument, bool>> predicate)
-        {
-            try
-            {
-                _deleted = await _unitOfWork.DeleteManyAsync(predicate);
-            }
-            catch (DocumentNotFoundException<TKey>) {}
+            if (type == typeof(Parent))
+                _deleted = await _unitOfWork.DeleteManyAsync<Parent>(predicate, cascade);
+            if (type == typeof(Child))
+                _deleted = await _unitOfWork.DeleteManyAsync<Child>(predicate, cascade);
+            if (type.BaseType == typeof(Event))
+                _deleted = await _unitOfWork.DeleteManyAsync<Event>(predicate, cascade);
         }
 
         #endregion
 
         #region Assert
 
-        protected async Task RepositoryHas(long expected)
+        protected void AnyFound(bool expected) =>
+            _any.Should().Be(expected);
+
+        protected async Task RepositoryHas(Type type, long expected)
         {
-            await Count();
+            await Count(type);
             _count.Should().Be(expected);
         }
 
-        protected async Task RepositoryHas(TDocument expected) =>
-            (await _repository.GetAsync(expected))
-                .Should().BeEquivalentTo(expected);
+        protected async Task RepositoryHas(IDocument<Guid> expected)
+        {
+            switch (expected)
+            {
+                case Parent parent:
+                    await GetOne(parent);
+                    (_document as Parent).Should()
+                        .BeEquivalentTo(expected, config => config.Excluding(p => p.Modified));
+                    break;
+                case Child child:
+                    await GetOne(child);
+                    (_document as Child).Should()
+                        .BeEquivalentTo(expected, config => config.Excluding(c => c.Modified));
+                    break;
+                case Event @event:
+                    await GetOne(@event);
+                    (_document as Event).Should()
+                        .BeEquivalentTo(expected, config => config.Excluding(e => e.Modified));
+                    break;
+            }
+        }
 
-        protected async Task RepositoryHas(Expression<Func<TDocument, bool>> predicate) =>
-            (await _unitOfWork.AnyAsync(predicate))
-                .Should().Be(true);
-
-        protected void DocumentIsFound(TDocument expected) =>
-            _document.Should().BeEquivalentTo(expected);
+        protected void DocumentFound(IDocument<Guid> expected)
+        {
+            switch (expected)
+            {
+                case Parent _:
+                    (_document as Parent).Should().BeEquivalentTo(expected);
+                    break;
+                case Child _:
+                    (_document as Child).Should().BeEquivalentTo(expected);
+                    break;
+                case Event _:
+                    (_document as Event).Should().BeEquivalentTo(expected);
+                    break;
+            }
+        }
 
         protected void DocumentNotFound() =>
             _document.Should().BeNull();
 
-        protected void DocumentsAreFound(IEnumerable<TDocument> expected) =>
-            _documents.Should().BeEquivalentTo(expected);
+        protected void DocumentsFound(IEnumerable<IDocument<Guid>> expected)
+        {
+            switch (expected)
+            {
+                case IEnumerable<Parent> _:
+                    (_documents as IEnumerable<Parent>).Should().BeEquivalentTo(expected);
+                    break;
+                case IEnumerable<Child> _:
+                    (_documents as IEnumerable<Child>).Should().BeEquivalentTo(expected);
+                    break;
+                case IEnumerable<Event> _:
+                    (_documents as IEnumerable<Event>).Should().BeEquivalentTo(expected);
+                    break;
+            }
+        }
 
         protected void DocumentsNotFound() =>
             _documents.Should().BeNullOrEmpty();
@@ -261,6 +411,18 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
 
         protected void DocumentsDeleted(long expected) =>
             _deleted.Should().Be(expected);
+
+        protected async Task ModifiedUpdated(IDocument<Guid> document)
+        {
+            await GetOne(document);
+            _document.Modified.Should().NotBe(document.Modified);
+        }
+
+        protected async Task ModifiedNotUpdated(IDocument<Guid> document)
+        {
+            await GetOne(document);
+            _document.Modified.Should().Be(document.Modified);
+        }
 
         #endregion
     }

@@ -16,7 +16,7 @@ namespace Bubbio.MongoDb.Tests.Scenarios
         where TProject : class
     {
         private readonly IMongoDbRepository _repository;
-        private readonly MongoUrl _url = new MongoUrl(TestConstants.MongoUrl);
+        private readonly MongoUrl _url = new MongoUrl(TestConstants.MongoDbUrl);
         private readonly string _partitionKey;
 
         private TDocument _document;
@@ -139,11 +139,6 @@ namespace Bubbio.MongoDb.Tests.Scenarios
         protected async Task RepositoryDeletesOne(TDocument document)
         {
             _deleted = await _repository.DeleteAsync<TDocument, TKey>(document);
-        }
-
-        protected async Task RepositoryDeletesOne(Expression<Func<TDocument, bool>> filter)
-        {
-            _deleted = await _repository.DeleteAsync<TDocument, TKey>(filter, _partitionKey);
         }
 
         protected async Task RepositoryDeletesMany(IEnumerable<TDocument> documents)

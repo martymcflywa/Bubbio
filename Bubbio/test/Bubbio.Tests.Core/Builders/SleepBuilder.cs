@@ -18,6 +18,24 @@ namespace Bubbio.Tests.Core.Builders
             };
         }
 
+        public SleepBuilder WithId(Guid id)
+        {
+            _sleep.Id = id;
+            return this;
+        }
+
+        public SleepBuilder WithCreated(DateTimeOffset created)
+        {
+            _sleep.Created = created;
+            return this;
+        }
+
+        public SleepBuilder WithModified(DateTimeOffset modified)
+        {
+            _sleep.Modified = modified;
+            return this;
+        }
+
         public SleepBuilder WithChildId(Guid id)
         {
             _sleep.ChildId = id;

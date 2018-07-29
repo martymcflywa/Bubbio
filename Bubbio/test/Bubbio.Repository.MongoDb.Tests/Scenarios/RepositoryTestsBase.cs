@@ -28,36 +28,40 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
             _repository = new Repository<TDocument, TKey>(mongoDb, partitionKey);
         }
 
+        #region Setup
+
         protected async Task RepositoryIsEmpty()
         {
             await _repository.DropAsync();
         }
 
-        #region Create
-
         protected async Task RepositoryContains(TDocument document)
         {
             await RepositoryIsEmpty();
-            await RepositoryAddsOne(document);
+            await InsertOne(document);
         }
 
         protected async Task RepositoryContains(IEnumerable<TDocument> documents)
         {
             await RepositoryIsEmpty();
-            await RepositoryAddsMany(documents);
+            await InsertMany(documents);
         }
 
-        protected async Task RepositoryAddsOne(TDocument document) =>
+        #endregion
+
+        #region Create
+
+        protected async Task InsertOne(TDocument document) =>
             await _repository.InsertAsync(document);
 
-        protected async Task RepositoryAddsMany(IEnumerable<TDocument> documents) =>
+        protected async Task InsertMany(IEnumerable<TDocument> documents) =>
             await _repository.InsertManyAsync(documents);
 
         #endregion
 
         #region Read
 
-        protected async Task RepositoryGetsOneById(TKey id)
+        protected async Task GetOne(TKey id)
         {
             try
             {
@@ -66,7 +70,16 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
             catch (InvalidOperationException) {}
         }
 
-        protected async Task RepositoryGetsOneByPredicate(Expression<Func<TDocument, bool>> predicate)
+        protected async Task GetOne(TDocument document)
+        {
+            try
+            {
+                _document = await _repository.GetAsync(document);
+            }
+            catch (InvalidOperationException) {}
+        }
+
+        protected async Task GetOne(Expression<Func<TDocument, bool>> predicate)
         {
             try
             {
@@ -75,23 +88,23 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
             catch (InvalidOperationException) {}
         }
 
-        protected async Task RepositoryGetsMany(Expression<Func<TDocument, bool>> predicate) =>
+        protected async Task GetMany(Expression<Func<TDocument, bool>> predicate) =>
             _documents = await _repository.GetManyAsync(predicate, default(CancellationToken));
 
-        protected async Task RepositoryGetsPaginatedMany(Expression<Func<TDocument, bool>> predicate,
+        protected async Task GetMany(Expression<Func<TDocument, bool>> predicate,
                 int skip, int take) =>
             _documents = await _repository.GetManyAsync(predicate, skip, take);
 
-        protected async Task RepositoryFindsAny(Expression<Func<TDocument, bool>> predicate) =>
+        protected async Task Any(Expression<Func<TDocument, bool>> predicate) =>
             _foundAny = await _repository.AnyAsync(predicate);
 
-        protected async Task RepositoryGetsCountForCollection() =>
+        protected async Task Count() =>
             _count = await _repository.CountAsync();
 
-        protected async Task RepositoryGetsCountByFilter(Expression<Func<TDocument, bool>> predicate) =>
+        protected async Task Count(Expression<Func<TDocument, bool>> predicate) =>
             _count = await _repository.CountAsync(predicate);
 
-        protected async Task RepositoryProjectsOne(Expression<Func<TDocument, bool>> predicate,
+        protected async Task ProjectOne(Expression<Func<TDocument, bool>> predicate,
             Expression<Func<TDocument, TProject>> projection)
         {
             try
@@ -101,7 +114,7 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
             catch (InvalidOperationException) {}
         }
 
-        protected async Task RepositoryProjectsMany(Expression<Func<TDocument, bool>> predicate,
+        protected async Task ProjectMany(Expression<Func<TDocument, bool>> predicate,
                 Expression<Func<TDocument, TProject>> projection) =>
             _projectedDocuments = await _repository.ProjectManyAsync(predicate, projection);
 
@@ -109,20 +122,24 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
 
         #region Update
 
-        protected async Task RepositoryIsUpdatedBy(TDocument updated)
+        protected async Task UpdateOne(TDocument updated)
         {
             await _repository.UpdateAsync(updated);
             _document = await _repository.GetAsync(updated);
         }
 
-        protected async Task RepositoryIsUpdatedBy<TField>(TDocument toUpdate,
+        protected async Task UpdateOne<TField>(TDocument toUpdate,
             Expression<Func<TDocument, TField>> selector, TField value)
         {
-            await _repository.UpdateAsync(toUpdate, selector, value);
-            _document = await _repository.GetAsync(toUpdate);
+            try
+            {
+                await _repository.UpdateAsync(toUpdate, selector, value);
+                _document = await _repository.GetAsync(toUpdate);
+            }
+            catch (InvalidOperationException) {}
         }
 
-        protected async Task RepositoryIsUpdatedBy<TField>(Expression<Func<TDocument, bool>> predicate,
+        protected async Task UpdateOne<TField>(Expression<Func<TDocument, bool>> predicate,
             Expression<Func<TDocument, TField>> selector, TField value)
         {
             try
@@ -137,19 +154,16 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
 
         #region Delete
 
-        protected async Task RepositoryDeletesOne(TDocument document) =>
-            _deleted = await _repository.DeleteAsync(document);
-
-        protected async Task RepositoryDeletesOne(TKey id) =>
+        protected async Task DeleteOne(TKey id) =>
             _deleted = await _repository.DeleteAsync(id);
 
-        protected async Task RepositoryDeletesOne(Expression<Func<TDocument, bool>> predicate) =>
-            _deleted = await _repository.DeleteAsync(predicate);
+        protected async Task DeleteOne(TDocument document) =>
+            _deleted = await _repository.DeleteAsync(document);
 
-        protected async Task RepositoryDeletesMany(IEnumerable<TDocument> documents) =>
+        protected async Task DeleteMany(IEnumerable<TDocument> documents) =>
             _deleted = await _repository.DeleteManyAsync(documents);
 
-        protected async Task RepositoryDeletesMany(Expression<Func<TDocument, bool>> predicate) =>
+        protected async Task DeleteMany(Expression<Func<TDocument, bool>> predicate) =>
             _deleted = await _repository.DeleteManyAsync(predicate);
 
         #endregion
@@ -158,45 +172,45 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
 
         protected async Task RepositoryHas(long expected)
         {
-            await RepositoryGetsCountForCollection();
+            await Count();
             _count.Should().Be(expected);
         }
 
-        protected void DocumentIsFound(TDocument expected) =>
+        protected void DocumentFound(TDocument expected) =>
             _document.Should().BeEquivalentTo(expected);
 
-        protected void DocumentsAreFound(IEnumerable<TDocument> expected) =>
+        protected void DocumentsFound(IEnumerable<TDocument> expected) =>
             _documents.Should().BeEquivalentTo(expected);
 
-        protected void DocumentIsNotFound() =>
+        protected void DocumentNotFound() =>
             _document.Should().BeNull();
 
-        protected void DocumentsAreNotFound() =>
+        protected void DocumentsNotFound() =>
             _documents.Should().BeEmpty();
 
-        protected void RepositoryFoundSomething(bool expected) =>
+        protected void FoundAny(bool expected) =>
             _foundAny.Should().Be(expected);
 
-        protected void RepositoryCounted(long expected) =>
+        protected void Counted(long expected) =>
             _count.Should().Be(expected);
 
-        protected void RepositoryDeleted(long expected) =>
+        protected void Deleted(long expected) =>
             _deleted.Should().Be(expected);
 
-        protected void DocumentIsProjected(TProject expected) =>
+        protected void OneProjected(TProject expected) =>
             _projectedDocument.Should().BeEquivalentTo(expected);
 
-        protected void DocumentNotProjected() =>
+        protected void OneNotProjected() =>
             _projectedDocument.Should().BeNull();
 
-        protected void DocumentsAreProjected(IEnumerable<TProject> expected) =>
+        protected void ManyProjected(IEnumerable<TProject> expected) =>
             _projectedDocuments.Should().BeEquivalentTo(expected);
 
-        protected void DocumentsNotProjected() =>
+        protected void ManyNotProjected() =>
             _projectedDocuments.Should().BeEmpty();
 
-        protected void DocumentIsUpdated(TDocument expected) =>
-            _document.Should().BeEquivalentTo(expected);
+        protected void DocumentUpdated(TDocument expected) =>
+            _document.Should().BeEquivalentTo(expected, config => config.Excluding(d => d.Modified));
 
         protected void DocumentNotUpdated() =>
             _document.Should().BeNull();

@@ -196,16 +196,6 @@ namespace Bubbio.MongoDb.Tests
         }
 
         [Fact]
-        public void DeleteOneByFilter()
-        {
-            this.Given(_ => RepositoryContains(OneDocument))
-                .When(_ => RepositoryDeletesOne(d => d.Name.Equals(OneDocument.Name)))
-                .Then(_ => RepositoryDeleted(1))
-                .And(_ => RepositoryHas(0))
-                .BDDfy();
-        }
-
-        [Fact]
         public void DeleteManyByDocuments()
         {
             this.Given(_ => RepositoryContains(AllDocuments))

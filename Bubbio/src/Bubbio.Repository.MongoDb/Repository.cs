@@ -134,12 +134,6 @@ namespace Bubbio.Repository.MongoDb
             return await _mongoDb.DeleteAsync<TDocument, TKey>(id, _partitionKey, token);
         }
 
-        public async Task<long> DeleteAsync(Expression<Func<TDocument, bool>> predicate,
-            CancellationToken token = default)
-        {
-            return await _mongoDb.DeleteAsync<TDocument, TKey>(predicate, _partitionKey, token);
-        }
-
         public async Task<long> DeleteManyAsync(IEnumerable<TDocument> entities, CancellationToken token = default)
         {
             return await _mongoDb.DeleteManyAsync<TDocument, TKey>(entities, _partitionKey, token);

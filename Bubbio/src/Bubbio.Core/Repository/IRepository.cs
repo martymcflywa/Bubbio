@@ -67,9 +67,6 @@ namespace Bubbio.Core.Repository
 
         Task<long> DeleteAsync(TKey id, CancellationToken token = default);
 
-        Task<long> DeleteAsync(Expression<Func<TEntity, bool>> predicate,
-            CancellationToken token = default);
-
         Task<long> DeleteManyAsync(IEnumerable<TEntity> entities, CancellationToken token = default);
 
         Task<long> DeleteManyAsync(Expression<Func<TEntity, bool>> predicate,

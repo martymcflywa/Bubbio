@@ -17,14 +17,10 @@ namespace Bubbio.Tests.Core.Examples
         public static IEnumerable<Child> AllUpdatedChildren =>
             AllChildren.Select(c => new ChildBuilder()
                 .WithId(c.Id)
-                .WithCreated(c.Created)
+                .WithCreated(c.Created.AddMinutes(30))
                 .WithModified(c.Modified)
                 .WithParentId(c.ParentId)
-                .WithName(new Name
-                {
-                    First = "Updated",
-                    Last = "Child"
-                })
+                .WithName(c.Name)
                 .Build());
 
         public static Child OneUpdatedChild => AllUpdatedChildren.First();
@@ -41,6 +37,7 @@ namespace Bubbio.Tests.Core.Examples
         {
             Ids = new List<Guid>
             {
+                Guid.NewGuid(),
                 Guid.NewGuid(),
                 Guid.NewGuid()
             };
@@ -60,6 +57,17 @@ namespace Bubbio.Tests.Core.Examples
                     .Build(),
                 new ChildBuilder()
                     .WithId(Ids[1])
+                    .WithParentId(ParentExamples.Ids[0])
+                    .WithName(new Name
+                    {
+                        First = "Second",
+                        Last = "Child"
+                    })
+                    .WithDateOfBirth(new DateTimeOffset(2018, 1, 1, 1, 0, 0, TimeSpan.FromHours(8)))
+                    .WithGender(Gender.Girl)
+                    .Build(),
+                new ChildBuilder()
+                    .WithId(Ids[2])
                     .WithParentId(ParentExamples.Ids[1])
                     .WithName(new Name
                     {

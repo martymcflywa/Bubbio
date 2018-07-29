@@ -16,4 +16,17 @@ namespace Bubbio.Core.Exceptions
         {
         }
     }
+
+    public class InvalidForeignIdException : InvalidForeignIdException<Guid>
+    {
+        public InvalidForeignIdException(MemberInfo primaryType, MemberInfo foreignType)
+            : base(primaryType, foreignType)
+        {
+        }
+
+        public InvalidForeignIdException(MemberInfo primaryType, MemberInfo foreignType, Guid foreignId)
+            : base(primaryType, foreignType, foreignId)
+        {
+        }
+    }
 }
