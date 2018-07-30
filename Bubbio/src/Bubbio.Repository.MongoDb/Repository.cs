@@ -53,6 +53,12 @@ namespace Bubbio.Repository.MongoDb
             return await _mongoDb.FindAsync<TDocument, TKey>(predicate, _partitionKey, token);
         }
 
+        public async Task<TDocument> GetLastAsync(Expression<Func<TDocument, bool>> predicate,
+            Expression<Func<TDocument, object>> orderBy, CancellationToken token = default)
+        {
+            return await _mongoDb.FindLastAsync<TDocument, TKey>(predicate, orderBy, _partitionKey, token);
+        }
+
         public async Task<IEnumerable<TDocument>> GetManyAsync(Expression<Func<TDocument, bool>> predicate,
             CancellationToken token = default)
         {

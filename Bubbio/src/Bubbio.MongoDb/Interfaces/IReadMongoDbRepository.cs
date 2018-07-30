@@ -42,6 +42,25 @@ namespace Bubbio.MongoDb.Interfaces
             where TKey : IEquatable<TKey>;
 
         /// <summary>
+        /// Async find one document by a linq predicate filter,
+        /// sorted by orderBy, and returns the last value.
+        /// </summary>
+        /// <param name="filter">The linq predicate filter.</param>
+        /// <param name="orderBy">The field to order by.</param>
+        /// <param name="partitionKey">Optional partition key.</param>
+        /// <param name="token">Optional cancellation token.</param>
+        /// <typeparam name="TDocument">The document type.</typeparam>
+        /// <typeparam name="TKey">The primary key type.</typeparam>
+        /// <returns></returns>
+        Task<TDocument> FindLastAsync<TDocument, TKey>(
+                Expression<Func<TDocument, bool>> filter,
+                Expression<Func<TDocument, object>> orderBy,
+                string partitionKey = null,
+            CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>;
+
+        /// <summary>
         /// Async find many documents by a linq predicate filter.
         /// </summary>
         /// <param name="filter">The linq predicate filter.</param>

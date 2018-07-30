@@ -4,6 +4,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Bubbio.Core.Contracts.Enums;
+using Bubbio.Core.Contracts.Events;
 using Bubbio.Core.Exceptions;
 using Bubbio.Core.Helpers;
 using Bubbio.Core.Repository;
@@ -80,6 +82,7 @@ namespace Bubbio.Repository.MongoDb
         private async Task InsertEventAsync(Event @event, CancellationToken token = default)
         {
             await ValidateForeignIdAsync<Event, Child>(@event.ChildId, token);
+            await ValidateTransitionAsync(@event as Sleep, token);
             await _eventRepository.InsertAsync(@event, token);
         }
 
@@ -99,6 +102,7 @@ namespace Bubbio.Repository.MongoDb
         {
             var eventsList = events.ToList();
             eventsList.ForEach(e => ValidateForeignId<Event, Child>(e.ChildId, token));
+            await ValidateTransitionsAsync(eventsList.Where(e => e.EventType.Equals(EventType.Sleep)), token);
             await _eventRepository.InsertManyAsync(eventsList, token);
         }
 
@@ -931,7 +935,74 @@ namespace Bubbio.Repository.MongoDb
 
         #endregion
 
-        #region Validate Foreign Id
+        #region ValidateTransition
+
+        private async Task ValidateTransitionAsync(IEvent @event, CancellationToken token = default)
+        {
+            if (!(@event is Sleep current))
+                return;
+
+            var previous = (Sleep) await _eventRepository
+                .GetLastAsync(
+                    e => e.ChildId.Equals(@event.ChildId) &&
+                         e.EventType.Equals(EventType.Sleep),
+                    e => e.Timestamp,
+                    token);
+
+            if (!IsValidTransition(previous, current))
+                throw new InvalidTransitionEventException(EventType.Sleep, current.Id, current.Transition);
+        }
+
+        private async Task ValidateTransitionsAsync(IEnumerable<Event> events, CancellationToken token = default)
+        {
+            var sleepsToSave = events
+                .Where(e => e.EventType.Equals(EventType.Sleep))
+                .OrderBy(e => e.Timestamp)
+                .GroupBy(g => g.ChildId)
+                .ToList();
+
+            if (!sleepsToSave.Any())
+                return;
+
+            foreach (var group in sleepsToSave)
+            {
+                var previous = default(Sleep);
+
+                if (await _eventRepository
+                    .GetLastAsync(
+                        e => e.ChildId.Equals(group.Key) &&
+                             e.EventType.Equals(EventType.Sleep),
+                        e => e.Timestamp,
+                        token) is Sleep lastSleep)
+                {
+                    previous = lastSleep;
+                }
+
+                foreach (var @event in group)
+                {
+                    var current = (Sleep) @event;
+                    if (!IsValidTransition(previous, current))
+                        throw new InvalidTransitionEventException(EventType.Sleep, current.Id, current.Transition);
+                    previous = current;
+                }
+            }
+        }
+
+        private static bool IsValidTransition(ISleep previous, ISleep current)
+        {
+            switch (current.Transition)
+            {
+                case Transition.Start when previous == null || previous.Transition.Equals(Transition.End):
+                case Transition.End when previous != null && previous.Transition.Equals(Transition.Start):
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        #endregion
+
+        #region ValidateForeignId
 
         private async Task ValidateForeignIdAsync<TPrimary, TForeign>(Guid id, CancellationToken token = default)
         {

@@ -38,11 +38,12 @@ namespace Bubbio.Repository.MongoDb.Tests
 
         [Theory]
         [ClassData(typeof(DocumentsToInsert))]
+        [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
         public void InsertManyDocuments(IEnumerable<IDocument<Guid>> existing, IEnumerable<IDocument<Guid>> toInsert)
         {
             this.Given(_ => RepositoryContains(existing))
                 .When(_ => InsertMany(toInsert))
-                .Then(_ => RepositoryContains(toInsert))
+                .Then(_ => RepositoryHas(toInsert.First().GetType(), toInsert.Count()))
                 .BDDfy();
         }
 
@@ -53,6 +54,28 @@ namespace Bubbio.Repository.MongoDb.Tests
             this.Given(_ => RepositoriesAreEmpty())
                 .When(_ => InsertMany(toInsert))
                 .Then(_ => RepositoryHas(toInsert.First().GetType(), 0))
+                .BDDfy();
+        }
+
+        [Theory]
+        [ClassData(typeof(TransitionToInsert))]
+        public void InsertTransitionEvent(IEnumerable<IDocument<Guid>> existing, IDocument<Guid> toInsert,
+            long expected)
+        {
+            this.Given(_ => RepositoryContains(existing))
+                .When(_ => InsertOne(toInsert))
+                .Then(_ => RepositoryHas(toInsert.GetType(), expected))
+                .BDDfy();
+        }
+
+        [Theory]
+        [ClassData(typeof(TransitionsToInsert))]
+        public void InsertTransitionEvents(IEnumerable<IDocument<Guid>> existing, IEnumerable<IDocument<Guid>> toInsert,
+            long expected)
+        {
+            this.Given(_ => RepositoryContains(existing))
+                .When(_ => InsertMany(toInsert))
+                .Then(_ => RepositoryHas(toInsert.First().GetType(), expected))
                 .BDDfy();
         }
 

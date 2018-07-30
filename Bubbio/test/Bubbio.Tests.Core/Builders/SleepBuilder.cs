@@ -1,5 +1,6 @@
 ﻿using System;
 using Bubbio.Core.Contracts.Enums;
+using Bubbio.Core.Contracts.Events;
 using Bubbio.MongoDb.Documents.Events;
 
 namespace Bubbio.Tests.Core.Builders
@@ -15,6 +16,16 @@ namespace Bubbio.Tests.Core.Builders
                 ChildId = Guid.NewGuid(),
                 EventType = EventType.Sleep,
                 Transition = Transition.Start
+            };
+        }
+
+        public SleepBuilder(ISleep sleep)
+        {
+            _sleep = new Sleep
+            {
+                ChildId = sleep.ChildId,
+                EventType = EventType.Sleep,
+                Transition = sleep.Transition
             };
         }
 

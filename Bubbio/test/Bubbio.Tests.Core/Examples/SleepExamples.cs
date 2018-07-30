@@ -12,6 +12,9 @@ namespace Bubbio.Tests.Core.Examples
         public static IEnumerable<Sleep> AllSleeps { get; }
         public static Sleep OneSleep => AllSleeps.First();
 
+        public static Sleep Start { get; }
+        public static Sleep End { get; }
+
         public static IEnumerable<Sleep> AllUpdatedSleeps =>
             AllSleeps.Select(s => new SleepBuilder()
                 .WithId(s.Id)
@@ -58,6 +61,18 @@ namespace Bubbio.Tests.Core.Examples
                     .WithTransition(Transition.End)
                     .Build()
             };
+
+            Start = new SleepBuilder()
+                .WithChildId(ChildExamples.OneChild.Id)
+                .WithTimestamp(DateTimeOffset.MinValue)
+                .WithTransition(Transition.Start)
+                .Build();
+
+            End = new SleepBuilder()
+                .WithChildId(ChildExamples.OneChild.Id)
+                .WithTimestamp(DateTimeOffset.MinValue.AddMinutes(30))
+                .WithTransition(Transition.End)
+                .Build();
         }
     }
 }

@@ -108,6 +108,7 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
                 await _unitOfWork.InsertAsync(document);
             }
             catch (InvalidForeignIdException) {}
+            catch (InvalidTransitionEventException) {}
         }
 
         protected async Task InsertMany(IEnumerable<IDocument<Guid>> documents)
@@ -117,6 +118,7 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
                 await _unitOfWork.InsertManyAsync(documents);
             }
             catch (InvalidForeignIdException) {}
+            catch (InvalidTransitionEventException) {}
         }
 
         #endregion

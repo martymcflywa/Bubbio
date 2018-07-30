@@ -74,6 +74,19 @@ namespace Bubbio.MongoDb
         }
 
         /// <inheritdoc />
+        public async Task<TDocument> FindLastAsync<TDocument, TKey>(Expression<Func<TDocument, bool>> filter,
+                Expression<Func<TDocument, object>> orderBy, string partitionKey = null,
+                CancellationToken token = default)
+            where TDocument : IDocument<TKey>
+            where TKey : IEquatable<TKey>
+        {
+            return await GetCollection<TDocument, TKey>(partitionKey)
+                .Find(filter)
+                .SortByDescending(orderBy)
+                .FirstOrDefaultAsync(token);
+        }
+
+        /// <inheritdoc />
         public async Task<IEnumerable<TDocument>> FindManyAsync<TDocument, TKey>(
                 Expression<Func<TDocument, bool>> filter,
                 string partitionKey = null,

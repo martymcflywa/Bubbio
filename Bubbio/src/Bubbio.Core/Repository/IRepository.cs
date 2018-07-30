@@ -25,6 +25,9 @@ namespace Bubbio.Core.Repository
         Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> predicate,
             CancellationToken token = default);
 
+        Task<TEntity> GetLastAsync(Expression<Func<TEntity, bool>> predicate,
+            Expression<Func<TEntity, object>> orderBy, CancellationToken token = default);
+
         Task<IEnumerable<TEntity>> GetManyAsync(Expression<Func<TEntity, bool>> predicate,
             CancellationToken token = default);
 
