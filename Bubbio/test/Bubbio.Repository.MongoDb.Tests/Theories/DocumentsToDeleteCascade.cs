@@ -31,14 +31,14 @@ namespace Bubbio.Repository.MongoDb.Tests.Theories
                 Existing,
                 ChildExamples.AllChildren,
                 Existing.SelectMany(i => i)
-                    .Count(d => d.GetType() != typeof(Parent))
+                    .Count(d => !(d is Parent))
             };
             yield return new object[]
             {
                 Existing,
                 SleepExamples.AllSleeps,
                 Existing.SelectMany(i => i)
-                    .Count(d => d.GetType().BaseType == typeof(Event))
+                    .Count(d => d is Event)
             };
         }
 

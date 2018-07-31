@@ -2,8 +2,8 @@
 
 namespace Bubbio.Core.Contracts.Events
 {
-    public interface IBreastFeed : ITransitionEvent
+    public interface ITransitionEvent : IEvent
     {
-        Side Side { get; set; }
+        Transition Transition { get; set; }
     }
 }

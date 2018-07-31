@@ -9,11 +9,13 @@ namespace Bubbio.MongoDb.Documents.Events
 {
     [Serializable]
     [BsonDiscriminator(Required = true)]
-    [BsonKnownTypes(typeof(BreastFeed))]
+    [BsonKnownTypes(
+        typeof(BreastFeed),
+        typeof(Sleep))]
     [CollectionName]
-    public class BreastFeed : TransitionEvent, IBreastFeed
+    public abstract class TransitionEvent : Event, ITransitionEvent
     {
         [BsonRepresentation(BsonType.String)]
-        public Side Side { get; set; }
+        public Transition Transition { get; set; }
     }
 }

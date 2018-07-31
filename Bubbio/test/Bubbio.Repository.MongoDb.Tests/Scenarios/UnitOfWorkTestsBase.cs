@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Bubbio.Core.Exceptions;
 using Bubbio.Core.Repository;
+using Bubbio.Domain.Validators;
 using Bubbio.MongoDb;
 using Bubbio.MongoDb.Documents.Constants;
 using Bubbio.MongoDb.Documents.Entities;
@@ -40,7 +41,11 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
             _parentRepository = new Repository<Parent, Guid>(mongoDb, Partitions.Parents.ToString());
             _childRepository = new Repository<Child, Guid>(mongoDb, Partitions.Children.ToString());
             _eventRepository = new Repository<Event, Guid>(mongoDb, Partitions.Events.ToString());
-            _unitOfWork = new UnitOfWork(_parentRepository, _childRepository, _eventRepository);
+            _unitOfWork = new UnitOfWork(
+                _parentRepository,
+                _childRepository,
+                _eventRepository,
+                new TransitionValidator());
         }
 
         #region Setup
@@ -127,11 +132,11 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
 
         protected async Task Any(Type type, Expression<Func<IDocument<Guid>, bool>> predicate)
         {
-            if (type == typeof(Parent))
+            if (typeof(Parent).IsAssignableFrom(type))
                 _any = await _unitOfWork.AnyAsync<Parent>(predicate);
-            if (type == typeof(Child))
+            if (typeof(Child).IsAssignableFrom(type))
                 _any = await _unitOfWork.AnyAsync<Child>(predicate);
-            if (type.BaseType == typeof(Event))
+            if (typeof(Event).IsAssignableFrom(type))
                 _any = await _unitOfWork.AnyAsync<Event>(predicate);
         }
 
@@ -139,11 +144,11 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                if (type == typeof(Parent))
+                if (typeof(Parent).IsAssignableFrom(type))
                     _document = await _unitOfWork.GetAsync<Parent>(id);
-                if (type == typeof(Child))
+                if (typeof(Child).IsAssignableFrom(type))
                     _document = await _unitOfWork.GetAsync<Child>(id);
-                if (type.BaseType == typeof(Event))
+                if (typeof(Event).IsAssignableFrom(type))
                     _document = await _unitOfWork.GetAsync<Event>(id);
             }
             catch (DocumentNotFoundException) {}
@@ -164,11 +169,11 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                if (type == typeof(Parent))
+                if (typeof(Parent).IsAssignableFrom(type))
                     _document = await _unitOfWork.GetAsync<Parent>(predicate);
-                if (type == typeof(Child))
+                if (typeof(Child).IsAssignableFrom(type))
                     _document = await _unitOfWork.GetAsync<Child>(predicate);
-                if (type.BaseType == typeof(Event))
+                if (typeof(Event).IsAssignableFrom(type))
                     _document = await _unitOfWork.GetAsync<Event>(predicate);
             }
             catch (DocumentNotFoundException) {}
@@ -179,11 +184,11 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                if (type == typeof(Parent))
+                if (typeof(Parent).IsAssignableFrom(type))
                     _documents = await _unitOfWork.GetManyAsync<Parent>(predicate, default);
-                if (type == typeof(Child))
+                if (typeof(Child).IsAssignableFrom(type))
                     _documents = await _unitOfWork.GetManyAsync<Child>(predicate, default);
-                if (type.BaseType == typeof(Event))
+                if (typeof(Event).IsAssignableFrom(type))
                     _documents = await _unitOfWork.GetManyAsync<Event>(predicate, default);
             }
             catch (DocumentNotFoundException) {}
@@ -194,11 +199,11 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                if (type == typeof(Parent))
+                if (typeof(Parent).IsAssignableFrom(type))
                     _documents = await _unitOfWork.GetManyAsync<Parent>(predicate, skip, take);
-                if (type == typeof(Child))
+                if (typeof(Child).IsAssignableFrom(type))
                     _documents = await _unitOfWork.GetManyAsync<Child>(predicate, skip, take);
-                if (type.BaseType == typeof(Event))
+                if (typeof(Event).IsAssignableFrom(type))
                     _documents = await _unitOfWork.GetManyAsync<Event>(predicate, skip, take);
             }
             catch (DocumentNotFoundException) {}
@@ -206,21 +211,21 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
 
         protected async Task Count(Type type)
         {
-            if (type == typeof(Parent))
+            if (typeof(Parent).IsAssignableFrom(type))
                 _count = await _unitOfWork.CountAsync<Parent>();
-            if (type == typeof(Child))
+            if (typeof(Child).IsAssignableFrom(type))
                 _count = await _unitOfWork.CountAsync<Child>();
-            if (type.BaseType == typeof(Event))
+            if (typeof(Event).IsAssignableFrom(type))
                 _count = await _unitOfWork.CountAsync<Event>();
         }
 
         protected async Task Count(Type type, Expression<Func<IDocument<Guid>, bool>> predicate)
         {
-            if (type == typeof(Parent))
+            if (typeof(Parent).IsAssignableFrom(type))
                 _count = await _unitOfWork.CountAsync<Parent>(predicate);
-            if (type == typeof(Child))
+            if (typeof(Child).IsAssignableFrom(type))
                 _count = await _unitOfWork.CountAsync<Child>(predicate);
-            if (type.BaseType == typeof(Event))
+            if (typeof(Event).IsAssignableFrom(type))
                 _count = await _unitOfWork.CountAsync<Event>(predicate);
         }
 
@@ -229,11 +234,11 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                if (type == typeof(Parent))
+                if (typeof(Parent).IsAssignableFrom(type))
                     _projection = await _unitOfWork.ProjectOneAsync<Parent, TestProjection>(predicate, projection);
-                if (type == typeof(Child))
+                if (typeof(Child).IsAssignableFrom(type))
                     _projection = await _unitOfWork.ProjectOneAsync<Child, TestProjection>(predicate, projection);
-                if (type.BaseType == typeof(Event))
+                if (typeof(Event).IsAssignableFrom(type))
                     _projection = await _unitOfWork.ProjectOneAsync<Event, TestProjection>(predicate, projection);
             }
             catch (DocumentNotFoundException) {}
@@ -245,11 +250,11 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                if (type == typeof(Parent))
+                if (typeof(Parent).IsAssignableFrom(type))
                     _projections = await _unitOfWork.ProjectManyAsync<Parent, TestProjection>(predicate, projection);
-                if (type == typeof(Child))
+                if (typeof(Child).IsAssignableFrom(type))
                     _projections = await _unitOfWork.ProjectManyAsync<Child, TestProjection>(predicate, projection);
-                if (type.BaseType == typeof(Event))
+                if (typeof(Event).IsAssignableFrom(type))
                     _projections = await _unitOfWork.ProjectManyAsync<Event, TestProjection>(predicate, projection);
             }
             catch (DocumentNotFoundException) {}
@@ -279,11 +284,11 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         {
             try
             {
-                if (type == typeof(Parent))
+                if (typeof(Parent).IsAssignableFrom(type))
                     _updated = await _unitOfWork.UpdateAsync<Parent, TField>(predicate, selector, value);
-                if (type == typeof(Child))
+                if (typeof(Child).IsAssignableFrom(type))
                     _updated = await _unitOfWork.UpdateAsync<Child, TField>(predicate, selector, value);
-                if (type.BaseType == typeof(Event))
+                if (typeof(Event).IsAssignableFrom(type))
                     _updated = await _unitOfWork.UpdateAsync<Event, TField>(predicate, selector, value);
             }
             catch (InvalidOperationException) {}
@@ -295,11 +300,11 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
 
         protected async Task DeleteOne(Type type, Guid id, bool cascade = default)
         {
-            if (type == typeof(Parent))
+            if (typeof(Parent).IsAssignableFrom(type))
                 _deleted = await _unitOfWork.DeleteAsync<Parent>(id, cascade);
-            if (type == typeof(Child))
+            if (typeof(Child).IsAssignableFrom(type))
                 _deleted = await _unitOfWork.DeleteAsync<Child>(id, cascade);
-            if (type.BaseType == typeof(Event))
+            if (typeof(Event).IsAssignableFrom(type))
                 _deleted = await _unitOfWork.DeleteAsync<Event>(id, cascade);
         }
 
@@ -312,11 +317,11 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         protected async Task DeleteMany(Type type, Expression<Func<IDocument<Guid>, bool>> predicate,
             bool cascade = default)
         {
-            if (type == typeof(Parent))
+            if (typeof(Parent).IsAssignableFrom(type))
                 _deleted = await _unitOfWork.DeleteManyAsync<Parent>(predicate, cascade);
-            if (type == typeof(Child))
+            if (typeof(Child).IsAssignableFrom(type))
                 _deleted = await _unitOfWork.DeleteManyAsync<Child>(predicate, cascade);
-            if (type.BaseType == typeof(Event))
+            if (typeof(Event).IsAssignableFrom(type))
                 _deleted = await _unitOfWork.DeleteManyAsync<Event>(predicate, cascade);
         }
 

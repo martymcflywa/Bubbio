@@ -1,9 +1,6 @@
-﻿using Bubbio.Core.Contracts.Enums;
-
-namespace Bubbio.Core.Contracts.Events
+﻿namespace Bubbio.Core.Contracts.Events
 {
-    public interface ISleep : IEvent
+    public interface ISleep : ITransitionEvent
     {
-        Transition Transition { get; set; }
     }
 }

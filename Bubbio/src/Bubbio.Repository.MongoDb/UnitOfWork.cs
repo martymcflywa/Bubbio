@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Bubbio.Core.Abstraction;
 using Bubbio.Core.Contracts.Enums;
 using Bubbio.Core.Contracts.Events;
 using Bubbio.Core.Exceptions;
@@ -20,14 +21,18 @@ namespace Bubbio.Repository.MongoDb
         private readonly IRepository<Child, Guid> _childRepository;
         private readonly IRepository<Event, Guid> _eventRepository;
 
+        private readonly ITransitionValidator _transitionValidator;
+
         public UnitOfWork(
             IRepository<Parent, Guid> parentRepository,
             IRepository<Child, Guid> childRepository,
-            IRepository<Event, Guid> eventRepository)
+            IRepository<Event, Guid> eventRepository,
+            ITransitionValidator transitionValidator)
         {
             _parentRepository = parentRepository;
             _childRepository = childRepository;
             _eventRepository = eventRepository;
+            _transitionValidator = transitionValidator;
         }
 
         #region Create
@@ -886,19 +891,19 @@ namespace Bubbio.Repository.MongoDb
         {
             var type = typeof(TDocument);
 
-            if (type == typeof(Parent))
+            if (typeof(Parent).IsAssignableFrom(type))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Parent>.Transform(predicate);
                 return await DeleteManyParentsAsync(filter, cascade, token);
             }
 
-            if (type == typeof(Child))
+            if (typeof(Child).IsAssignableFrom(type))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Child>.Transform(predicate);
                 return await DeleteManyChildrenAsync(filter, cascade, token);
             }
 
-            if (type != typeof(Event)) throw new UnsupportedTypeException(type);
+            if (!typeof(Event).IsAssignableFrom(type)) throw new UnsupportedTypeException(type);
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Event>.Transform(predicate);
                 return await DeleteManyEventsAsync(filter, token);
@@ -939,21 +944,21 @@ namespace Bubbio.Repository.MongoDb
 
         private async Task ValidateTransitionAsync(IEvent @event, CancellationToken token = default)
         {
-            if (!(@event is Sleep current))
+            if (!(@event is ITransitionEvent current))
                 return;
 
-            var previous = (Sleep) await _eventRepository
+            var previous = (ITransitionEvent) await _eventRepository
                 .GetLastAsync(
                     e => e.ChildId.Equals(@event.ChildId) &&
                          e.EventType.Equals(EventType.Sleep),
                     e => e.Timestamp,
                     token);
 
-            if (!IsValidTransition(previous, current))
+            if (!_transitionValidator.IsValid(previous, current))
                 throw new InvalidTransitionEventException(EventType.Sleep, current.Id, current.Transition);
         }
 
-        private async Task ValidateTransitionsAsync(IEnumerable<Event> events, CancellationToken token = default)
+        private async Task ValidateTransitionsAsync(IEnumerable<IEvent> events, CancellationToken token = default)
         {
             var sleepsToSave = events
                 .Where(e => e.EventType.Equals(EventType.Sleep))
@@ -966,37 +971,25 @@ namespace Bubbio.Repository.MongoDb
 
             foreach (var group in sleepsToSave)
             {
-                var previous = default(Sleep);
+                var previous = default(ITransitionEvent);
 
                 if (await _eventRepository
                     .GetLastAsync(
                         e => e.ChildId.Equals(group.Key) &&
                              e.EventType.Equals(EventType.Sleep),
                         e => e.Timestamp,
-                        token) is Sleep lastSleep)
+                        token) is ITransitionEvent lastSleep)
                 {
                     previous = lastSleep;
                 }
 
                 foreach (var @event in group)
                 {
-                    var current = (Sleep) @event;
-                    if (!IsValidTransition(previous, current))
+                    var current = (ITransitionEvent) @event;
+                    if (!_transitionValidator.IsValid(previous, current))
                         throw new InvalidTransitionEventException(EventType.Sleep, current.Id, current.Transition);
                     previous = current;
                 }
-            }
-        }
-
-        private static bool IsValidTransition(ISleep previous, ISleep current)
-        {
-            switch (current.Transition)
-            {
-                case Transition.Start when previous == null || previous.Transition.Equals(Transition.End):
-                case Transition.End when previous != null && previous.Transition.Equals(Transition.Start):
-                    return true;
-                default:
-                    return false;
             }
         }
 
