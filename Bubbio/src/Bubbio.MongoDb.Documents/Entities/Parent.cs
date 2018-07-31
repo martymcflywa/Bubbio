@@ -1,6 +1,7 @@
 ﻿using System;
 using Bubbio.Core.Attributes;
 using Bubbio.Core.Contracts;
+using Bubbio.Core.Contracts.Enums;
 using Bubbio.Core.Repository;
 using Bubbio.MongoDb.Documents.Constants;
 using MongoDB.Bson;
@@ -30,6 +31,8 @@ namespace Bubbio.MongoDb.Documents.Entities
         #region IParent
 
         public IName Name { get; set; }
+        [BsonRepresentation(BsonType.String)]
+        public MeasureType MeasureType { get; set; }
 
         #endregion
 

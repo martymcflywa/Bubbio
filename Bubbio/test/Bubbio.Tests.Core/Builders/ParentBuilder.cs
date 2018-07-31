@@ -1,5 +1,6 @@
 ﻿using System;
 using Bubbio.Core.Contracts;
+using Bubbio.Core.Contracts.Enums;
 using Bubbio.MongoDb.Documents.Entities;
 
 namespace Bubbio.Tests.Core.Builders
@@ -65,6 +66,12 @@ namespace Bubbio.Tests.Core.Builders
         public ParentBuilder WithLastName(string last)
         {
             _parent.Name.Last = last;
+            return this;
+        }
+
+        public ParentBuilder WithMeasureType(MeasureType measureType)
+        {
+            _parent.MeasureType = measureType;
             return this;
         }
 
