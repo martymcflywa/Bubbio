@@ -1,6 +1,10 @@
 #!/bin/bash
-if [[ -z "$CI_PROJECT_NAME" ]]; then
-    PROJECT=Bubbio
+set -e
+
+if [ -z "$CI_PROJECT_NAME" ]; then
+    project=Bubbio
+    isLocal=true
 else
-    PROJECT="$CI_PROJECT_NAME"
+    project="$CI_PROJECT_NAME"
+    isLocal=false
 fi
