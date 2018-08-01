@@ -3,7 +3,8 @@
     public enum EventType
     {
         BiometricUpdate,
-        BottleFeed,
+        BottleFeedFormula,
+        BottleFeedBreastMilk,
         BreastFeed,
         Sleep,
     }

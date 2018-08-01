@@ -11,10 +11,9 @@ namespace Bubbio.MongoDb.Documents.Events
     [BsonDiscriminator(Required = true)]
     [BsonKnownTypes(typeof(BiometricUpdate))]
     [CollectionName]
-    public class BiometricUpdate : Event, IBiometricUpdate
+    public class BiometricUpdate : MeasureEvent, IBiometricUpdate
     {
         [BsonRepresentation(BsonType.String)]
         public BiometricType BiometricType { get; set; }
-        public float Measurement { get; set; }
     }
 }

@@ -14,7 +14,7 @@ namespace Bubbio.MongoDb.Documents.Events
     [BsonKnownTypes(
         typeof(Event),
         typeof(BiometricUpdate),
-        typeof(BottleFeed),
+        typeof(BottleFeedFormula),
         typeof(BreastFeed),
         typeof(Sleep))]
     [CollectionName]

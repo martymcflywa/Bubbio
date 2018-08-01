@@ -2,9 +2,8 @@
 
 namespace Bubbio.Core.Contracts.Events
 {
-    public interface IBiometricUpdate : IEvent
+    public interface IBiometricUpdate : IMeasureEvent
     {
         BiometricType BiometricType { get; set; }
-        float Measurement { get; set; }
     }
 }

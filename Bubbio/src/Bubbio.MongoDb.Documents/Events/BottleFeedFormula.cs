@@ -7,10 +7,11 @@ namespace Bubbio.MongoDb.Documents.Events
 {
     [Serializable]
     [BsonDiscriminator(Required = true)]
-    [BsonKnownTypes(typeof(BottleFeed))]
+    [BsonKnownTypes(typeof(BottleFeedFormula))]
     [CollectionName]
-    public class BottleFeed : Event, IBottleFeed
+    public class BottleFeedFormula : BottleFeedEvent, IBottleFeedFormula
     {
-        public float Amount { get; set; }
+        public int Scoops { get; set; }
+        public string Brand { get; set; }
     }
 }

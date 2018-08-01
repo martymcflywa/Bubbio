@@ -15,7 +15,11 @@ namespace Bubbio.Tests.Core.Builders
                 ChildId = Guid.NewGuid(),
                 EventType = EventType.BiometricUpdate,
                 BiometricType = BiometricType.Height,
-                Measurement = 600
+                Measurement = new Measurement
+                {
+                    UnitType = UnitType.Millimetre,
+                    Amount = 600
+                }
             };
         }
 
@@ -31,7 +35,7 @@ namespace Bubbio.Tests.Core.Builders
             return this;
         }
 
-        public BiometricUpdateBuilder WithMeasurement(float measurement)
+        public BiometricUpdateBuilder WithMeasurement(Measurement measurement)
         {
             _biometricUpdate.Measurement = measurement;
             return this;

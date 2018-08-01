@@ -18,22 +18,38 @@ namespace Bubbio.Tests.Core.Examples
                 new BiometricUpdateBuilder()
                     .WithChildId(ChildExamples.Ids[0])
                     .WithBiometricType(BiometricType.Height)
-                    .WithMeasurement(50)
+                    .WithMeasurement(new Measurement
+                    {
+                        UnitType = UnitType.Centimetre,
+                        Amount = 50
+                    })
                     .Build(),
                 new BiometricUpdateBuilder()
                     .WithChildId(ChildExamples.Ids[1])
                     .WithBiometricType(BiometricType.Weight)
-                    .WithMeasurement(3000)
+                    .WithMeasurement(new Measurement
+                    {
+                        UnitType = UnitType.Gram,
+                        Amount = 3500
+                    })
                     .Build(),
                 new BiometricUpdateBuilder()
                     .WithChildId(ChildExamples.Ids[0])
                     .WithBiometricType(BiometricType.Height)
-                    .WithMeasurement(100)
+                    .WithMeasurement(new Measurement
+                    {
+                        UnitType = UnitType.Centimetre,
+                        Amount = 55
+                    })
                     .Build(),
                 new BiometricUpdateBuilder()
                     .WithChildId(ChildExamples.Ids[1])
                     .WithBiometricType(BiometricType.Weight)
-                    .WithMeasurement(4000)
+                    .WithMeasurement(new Measurement
+                    {
+                        UnitType = UnitType.Gram,
+                        Amount = 4000
+                    })
                     .Build()
             };
         }

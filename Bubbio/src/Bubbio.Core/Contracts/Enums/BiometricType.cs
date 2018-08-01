@@ -4,5 +4,6 @@
     {
         Height,
         Weight,
+        HeadCircumference
     }
 }
