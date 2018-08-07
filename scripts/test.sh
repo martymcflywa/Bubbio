@@ -5,17 +5,27 @@ source ./scripts/env.sh
 tests=$project/test/**
 test=*.Tests
 
+function mongoDbUp()
+{
+    nc -w1 localhost 27017
+    if [ "$?" == 0 ]; then
+        return 1
+    fi
+    return 0;
+}
+
 # setup mongodb for local
 if [ $isLocal == true ]; then
     echo "Local test run"
-    echo "Setting up mongodb"
-    mongod --fork --dbpath ~/Documents/dev/database/bubbio/mongo --logpath /dev/null
-
-    echo "Waiting for mongodb to start"
-    until nc -z localhost 27017; do
-        sleep 1
-    done
-    echo "Mongodb started"
+    if mongoDbUp == 0; then
+        echo "Setting up mongodb"
+        mongod --fork --dbpath ~/Documents/dev/database/bubbio/mongo --logpath /dev/null
+        echo "Waiting for mongodb to start"
+        while mongoDbUp == 0; do
+            sleep 1
+        done
+        echo "Mongodb started"
+    fi
 fi
 
 # run tests

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Bubbio.Core.Exceptions;
+using Bubbio.Core.Helpers;
 using Bubbio.Core.Repository;
 using Bubbio.Domain.Validators;
 using Bubbio.MongoDb;
@@ -108,22 +108,12 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
 
         protected async Task InsertOne(IDocument<Guid> document)
         {
-            try
-            {
-                await _unitOfWork.InsertAsync(document);
-            }
-            catch (InvalidForeignIdException) {}
-            catch (InvalidTransitionEventException) {}
+            await _unitOfWork.InsertAsync(document);
         }
 
         protected async Task InsertMany(IEnumerable<IDocument<Guid>> documents)
         {
-            try
-            {
-                await _unitOfWork.InsertManyAsync(documents);
-            }
-            catch (InvalidForeignIdException) {}
-            catch (InvalidTransitionEventException) {}
+            await _unitOfWork.InsertManyAsync(documents);
         }
 
         #endregion
@@ -132,132 +122,100 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
 
         protected async Task Any(Type type, Expression<Func<IDocument<Guid>, bool>> predicate)
         {
-            if (typeof(Parent).IsAssignableFrom(type))
+            if (type.IsATypeOf(typeof(Parent)))
                 _any = await _unitOfWork.AnyAsync<Parent>(predicate);
-            if (typeof(Child).IsAssignableFrom(type))
+            if (type.IsATypeOf(typeof(Child)))
                 _any = await _unitOfWork.AnyAsync<Child>(predicate);
-            if (typeof(Event).IsAssignableFrom(type))
+            if (type.IsATypeOf(typeof(Event)))
                 _any = await _unitOfWork.AnyAsync<Event>(predicate);
         }
 
         protected async Task GetOne(Type type, Guid id)
         {
-            try
-            {
-                if (typeof(Parent).IsAssignableFrom(type))
-                    _document = await _unitOfWork.GetAsync<Parent>(id);
-                if (typeof(Child).IsAssignableFrom(type))
-                    _document = await _unitOfWork.GetAsync<Child>(id);
-                if (typeof(Event).IsAssignableFrom(type))
-                    _document = await _unitOfWork.GetAsync<Event>(id);
-            }
-            catch (DocumentNotFoundException) {}
-            catch (InvalidOperationException) {}
+            if (type.IsATypeOf(typeof(Parent)))
+                _document = await _unitOfWork.GetAsync<Parent>(id);
+            if (type.IsATypeOf(typeof(Child)))
+                _document = await _unitOfWork.GetAsync<Child>(id);
+            if (type.IsATypeOf(typeof(Event)))
+                _document = await _unitOfWork.GetAsync<Event>(id);
         }
 
         protected async Task GetOne(IDocument<Guid> document)
         {
-            try
-            {
-                _document = await _unitOfWork.GetAsync(document);
-            }
-            catch (DocumentNotFoundException) {}
-            catch (InvalidOperationException) {}
+            _document = await _unitOfWork.GetAsync(document);
         }
 
         protected async Task GetOne(Type type, Expression<Func<IDocument<Guid>, bool>> predicate)
         {
-            try
-            {
-                if (typeof(Parent).IsAssignableFrom(type))
-                    _document = await _unitOfWork.GetAsync<Parent>(predicate);
-                if (typeof(Child).IsAssignableFrom(type))
-                    _document = await _unitOfWork.GetAsync<Child>(predicate);
-                if (typeof(Event).IsAssignableFrom(type))
-                    _document = await _unitOfWork.GetAsync<Event>(predicate);
-            }
-            catch (DocumentNotFoundException) {}
-            catch (InvalidOperationException) {}
+            if (type.IsATypeOf(typeof(Parent)))
+                _document = await _unitOfWork.GetAsync<Parent>(predicate);
+            if (type.IsATypeOf(typeof(Child)))
+                _document = await _unitOfWork.GetAsync<Child>(predicate);
+            if (type.IsATypeOf(typeof(Event)))
+                _document = await _unitOfWork.GetAsync<Event>(predicate);
         }
 
         protected async Task GetMany(Type type, Expression<Func<IDocument<Guid>, bool>> predicate)
         {
-            try
-            {
-                if (typeof(Parent).IsAssignableFrom(type))
-                    _documents = await _unitOfWork.GetManyAsync<Parent>(predicate, default);
-                if (typeof(Child).IsAssignableFrom(type))
-                    _documents = await _unitOfWork.GetManyAsync<Child>(predicate, default);
-                if (typeof(Event).IsAssignableFrom(type))
-                    _documents = await _unitOfWork.GetManyAsync<Event>(predicate, default);
-            }
-            catch (DocumentNotFoundException) {}
+            if (type.IsATypeOf(typeof(Parent)))
+                _documents = await _unitOfWork.GetManyAsync<Parent>(predicate, default);
+            if (type.IsATypeOf(typeof(Child)))
+                _documents = await _unitOfWork.GetManyAsync<Child>(predicate, default);
+            if (type.IsATypeOf(typeof(Event)))
+                _documents = await _unitOfWork.GetManyAsync<Event>(predicate, default);
         }
 
         protected async Task GetManyPaged(Type type, Expression<Func<IDocument<Guid>, bool>> predicate, int skip,
             int take)
         {
-            try
-            {
-                if (typeof(Parent).IsAssignableFrom(type))
-                    _documents = await _unitOfWork.GetManyAsync<Parent>(predicate, skip, take);
-                if (typeof(Child).IsAssignableFrom(type))
-                    _documents = await _unitOfWork.GetManyAsync<Child>(predicate, skip, take);
-                if (typeof(Event).IsAssignableFrom(type))
-                    _documents = await _unitOfWork.GetManyAsync<Event>(predicate, skip, take);
-            }
-            catch (DocumentNotFoundException) {}
+            if (type.IsATypeOf(typeof(Parent)))
+                _documents = await _unitOfWork.GetManyAsync<Parent>(predicate, skip, take);
+            if (type.IsATypeOf(typeof(Child)))
+                _documents = await _unitOfWork.GetManyAsync<Child>(predicate, skip, take);
+            if (type.IsATypeOf(typeof(Event)))
+                _documents = await _unitOfWork.GetManyAsync<Event>(predicate, skip, take);
         }
 
         protected async Task Count(Type type)
         {
-            if (typeof(Parent).IsAssignableFrom(type))
+            if (type.IsATypeOf(typeof(Parent)))
                 _count = await _unitOfWork.CountAsync<Parent>();
-            if (typeof(Child).IsAssignableFrom(type))
+            if (type.IsATypeOf(typeof(Child)))
                 _count = await _unitOfWork.CountAsync<Child>();
-            if (typeof(Event).IsAssignableFrom(type))
+            if (type.IsATypeOf(typeof(Event)))
                 _count = await _unitOfWork.CountAsync<Event>();
         }
 
         protected async Task Count(Type type, Expression<Func<IDocument<Guid>, bool>> predicate)
         {
-            if (typeof(Parent).IsAssignableFrom(type))
+            if (type.IsATypeOf(typeof(Parent)))
                 _count = await _unitOfWork.CountAsync<Parent>(predicate);
-            if (typeof(Child).IsAssignableFrom(type))
+            if (type.IsATypeOf(typeof(Child)))
                 _count = await _unitOfWork.CountAsync<Child>(predicate);
-            if (typeof(Event).IsAssignableFrom(type))
+            if (type.IsATypeOf(typeof(Event)))
                 _count = await _unitOfWork.CountAsync<Event>(predicate);
         }
 
         protected async Task ProjectOne(Type type, Expression<Func<IDocument<Guid>, bool>> predicate,
             Expression<Func<IDocument<Guid>, TestProjection>> projection)
         {
-            try
-            {
-                if (typeof(Parent).IsAssignableFrom(type))
-                    _projection = await _unitOfWork.ProjectOneAsync<Parent, TestProjection>(predicate, projection);
-                if (typeof(Child).IsAssignableFrom(type))
-                    _projection = await _unitOfWork.ProjectOneAsync<Child, TestProjection>(predicate, projection);
-                if (typeof(Event).IsAssignableFrom(type))
-                    _projection = await _unitOfWork.ProjectOneAsync<Event, TestProjection>(predicate, projection);
-            }
-            catch (DocumentNotFoundException) {}
-            catch (InvalidOperationException) {}
+            if (type.IsATypeOf(typeof(Parent)))
+                _projection = await _unitOfWork.ProjectOneAsync<Parent, TestProjection>(predicate, projection);
+            if (type.IsATypeOf(typeof(Child)))
+                _projection = await _unitOfWork.ProjectOneAsync<Child, TestProjection>(predicate, projection);
+            if (type.IsATypeOf(typeof(Event)))
+                _projection = await _unitOfWork.ProjectOneAsync<Event, TestProjection>(predicate, projection);
         }
 
         protected async Task ProjectMany(Type type, Expression<Func<IDocument<Guid>, bool>> predicate,
             Expression<Func<IDocument<Guid>, TestProjection>> projection)
         {
-            try
-            {
-                if (typeof(Parent).IsAssignableFrom(type))
-                    _projections = await _unitOfWork.ProjectManyAsync<Parent, TestProjection>(predicate, projection);
-                if (typeof(Child).IsAssignableFrom(type))
-                    _projections = await _unitOfWork.ProjectManyAsync<Child, TestProjection>(predicate, projection);
-                if (typeof(Event).IsAssignableFrom(type))
-                    _projections = await _unitOfWork.ProjectManyAsync<Event, TestProjection>(predicate, projection);
-            }
-            catch (DocumentNotFoundException) {}
+            if (type.IsATypeOf(typeof(Parent)))
+                _projections = await _unitOfWork.ProjectManyAsync<Parent, TestProjection>(predicate, projection);
+            if (type.IsATypeOf(typeof(Child)))
+                _projections = await _unitOfWork.ProjectManyAsync<Child, TestProjection>(predicate, projection);
+            if (type.IsATypeOf(typeof(Event)))
+                _projections = await _unitOfWork.ProjectManyAsync<Event, TestProjection>(predicate, projection);
         }
 
         #endregion
@@ -282,16 +240,12 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         protected async Task UpdateOne<TField>(Type type, Expression<Func<IDocument<Guid>, bool>> predicate,
                 Expression<Func<IDocument<Guid>, TField>> selector, TField value)
         {
-            try
-            {
-                if (typeof(Parent).IsAssignableFrom(type))
-                    _updated = await _unitOfWork.UpdateAsync<Parent, TField>(predicate, selector, value);
-                if (typeof(Child).IsAssignableFrom(type))
-                    _updated = await _unitOfWork.UpdateAsync<Child, TField>(predicate, selector, value);
-                if (typeof(Event).IsAssignableFrom(type))
-                    _updated = await _unitOfWork.UpdateAsync<Event, TField>(predicate, selector, value);
-            }
-            catch (InvalidOperationException) {}
+            if (type.IsATypeOf(typeof(Parent)))
+                _updated = await _unitOfWork.UpdateAsync<Parent, TField>(predicate, selector, value);
+            if (type.IsATypeOf(typeof(Child)))
+                _updated = await _unitOfWork.UpdateAsync<Child, TField>(predicate, selector, value);
+            if (type.IsATypeOf(typeof(Event)))
+                _updated = await _unitOfWork.UpdateAsync<Event, TField>(predicate, selector, value);
         }
 
         #endregion
@@ -300,11 +254,11 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
 
         protected async Task DeleteOne(Type type, Guid id, bool cascade = default)
         {
-            if (typeof(Parent).IsAssignableFrom(type))
+            if (type.IsATypeOf(typeof(Parent)))
                 _deleted = await _unitOfWork.DeleteAsync<Parent>(id, cascade);
-            if (typeof(Child).IsAssignableFrom(type))
+            if (type.IsATypeOf(typeof(Child)))
                 _deleted = await _unitOfWork.DeleteAsync<Child>(id, cascade);
-            if (typeof(Event).IsAssignableFrom(type))
+            if (type.IsATypeOf(typeof(Event)))
                 _deleted = await _unitOfWork.DeleteAsync<Event>(id, cascade);
         }
 
@@ -317,11 +271,11 @@ namespace Bubbio.Repository.MongoDb.Tests.Scenarios
         protected async Task DeleteMany(Type type, Expression<Func<IDocument<Guid>, bool>> predicate,
             bool cascade = default)
         {
-            if (typeof(Parent).IsAssignableFrom(type))
+            if (type.IsATypeOf(typeof(Parent)))
                 _deleted = await _unitOfWork.DeleteManyAsync<Parent>(predicate, cascade);
-            if (typeof(Child).IsAssignableFrom(type))
+            if (type.IsATypeOf(typeof(Child)))
                 _deleted = await _unitOfWork.DeleteManyAsync<Child>(predicate, cascade);
-            if (typeof(Event).IsAssignableFrom(type))
+            if (type.IsATypeOf(typeof(Event)))
                 _deleted = await _unitOfWork.DeleteManyAsync<Event>(predicate, cascade);
         }
 

@@ -37,78 +37,90 @@ namespace Bubbio.Repository.MongoDb
 
         #region Create
 
-        public async Task InsertAsync(IDocument<Guid> document, CancellationToken token = default)
+        public async Task<bool> InsertAsync(IDocument<Guid> document, CancellationToken token = default)
         {
             switch (document)
             {
                 case Parent parent:
-                    await InsertParentAsync(parent, token);
-                    break;
+                    return await InsertParentAsync(parent, token);
                 case Child child:
-                    await InsertChildAsync(child, token);
-                    break;
+                    return await InsertChildAsync(child, token);
                 case Event @event:
-                    await InsertEventAsync(@event, token);
-                    break;
+                    return await InsertEventAsync(@event, token);
                 default:
                     throw new UnsupportedTypeException(document.GetType());
             }
         }
 
-        public async Task InsertManyAsync(IEnumerable<IDocument<Guid>> documents, CancellationToken token = default)
+        private async Task<bool> InsertParentAsync(Parent parent, CancellationToken token = default)
+        {
+            await _parentRepository.InsertAsync(parent, token);
+            return true;
+        }
+
+        private async Task<bool> InsertChildAsync(Child child, CancellationToken token = default)
+        {
+            if (!await LinkedDocumentExistsAsync<Parent>(child.ParentId, token))
+                return false;
+
+            await _childRepository.InsertAsync(child, token);
+            return true;
+        }
+
+        private async Task<bool> InsertEventAsync(Event @event, CancellationToken token = default)
+        {
+            if (!await LinkedDocumentExistsAsync<Child>(@event.ChildId, token))
+                return false;
+
+            if (!await IsValidTransitionAsync(@event as Sleep, token))
+                return false;
+
+            await _eventRepository.InsertAsync(@event, token);
+            return true;
+        }
+
+        public async Task<bool> InsertManyAsync(IEnumerable<IDocument<Guid>> documents, CancellationToken token = default)
         {
             switch (documents)
             {
                 case IEnumerable<Parent> parents:
-                    await InsertParentsAsync(parents, token);
-                    break;
+                    return await InsertParentsAsync(parents, token);
                 case IEnumerable<Child> children:
-                    await InsertChildrenAsync(children, token);
-                    break;
+                    return await InsertChildrenAsync(children, token);
                 case IEnumerable<Event> events:
-                    await InsertEventsAsync(events, token);
-                    break;
+                    return await InsertEventsAsync(events, token);
                 default:
-                    throw new UnsupportedTypeException(documents.GetType());
+                    return false;
             }
         }
 
-        private async Task InsertParentAsync(Parent parent, CancellationToken token = default)
-        {
-            await _parentRepository.InsertAsync(parent, token);
-        }
-
-        private async Task InsertChildAsync(Child child, CancellationToken token = default)
-        {
-            await ValidateForeignIdAsync<Child, Parent>(child.ParentId, token);
-            await _childRepository.InsertAsync(child, token);
-        }
-
-        private async Task InsertEventAsync(Event @event, CancellationToken token = default)
-        {
-            await ValidateForeignIdAsync<Event, Child>(@event.ChildId, token);
-            await ValidateTransitionAsync(@event as Sleep, token);
-            await _eventRepository.InsertAsync(@event, token);
-        }
-
-        private async Task InsertParentsAsync(IEnumerable<Parent> parents, CancellationToken token = default)
+        private async Task<bool> InsertParentsAsync(IEnumerable<Parent> parents, CancellationToken token = default)
         {
             await _parentRepository.InsertManyAsync(parents, token);
+            return true;
         }
 
-        private async Task InsertChildrenAsync(IEnumerable<Child> children, CancellationToken token = default)
+        private async Task<bool> InsertChildrenAsync(IEnumerable<Child> children, CancellationToken token = default)
         {
-            var childrenList = children.ToList();
-            childrenList.ForEach(c => ValidateForeignId<Child, Parent>(c.ParentId, token));
-            await _childRepository.InsertManyAsync(childrenList, token);
+            var list = children.ToList();
+            if (!list.All(c => LinkedDocumentExists<Parent>(c.ParentId, token)))
+                return false;
+
+            await _childRepository.InsertManyAsync(list, token);
+            return true;
         }
 
-        private async Task InsertEventsAsync(IEnumerable<Event> events, CancellationToken token = default)
+        private async Task<bool> InsertEventsAsync(IEnumerable<Event> events, CancellationToken token = default)
         {
-            var eventsList = events.ToList();
-            eventsList.ForEach(e => ValidateForeignId<Event, Child>(e.ChildId, token));
-            await ValidateTransitionsAsync(eventsList.Where(e => e.EventType.Equals(EventType.Sleep)), token);
-            await _eventRepository.InsertManyAsync(eventsList, token);
+            var list = events.ToList();
+
+            if (!list.All(e => LinkedDocumentExists<Child>(e.ChildId, token)))
+                return false;
+            if (!await IsValidTransitionsAsync(list, token))
+                return false;
+
+            await _eventRepository.InsertManyAsync(list, token);
+            return true;
         }
 
         #endregion
@@ -123,13 +135,13 @@ namespace Bubbio.Repository.MongoDb
         {
             var type = typeof(TDocument);
 
-            if (type == typeof(Parent))
+            if (type.IsATypeOf(typeof(Parent)))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Parent>.Transform(predicate);
                 return await AnyParentAsync(filter, token);
             }
 
-            if (type == typeof(Child))
+            if (type.IsATypeOf(typeof(Child)))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Child>.Transform(predicate);
                 return await AnyChildAsync(filter, token);
@@ -170,33 +182,27 @@ namespace Bubbio.Repository.MongoDb
         {
             var type = typeof(TDocument);
 
-            if (type == typeof(Parent))
+            if (type.IsATypeOf(typeof(Parent)))
                 return await GetParentAsync(id, token);
-            if (type == typeof(Child))
+            if (type.IsATypeOf(typeof(Child)))
                 return await GetChildAsync(id, token);
-            if (type == typeof(Event))
+            if (type.IsATypeOf(typeof(Event)))
                 return await GetEventAsync(id, token);
             throw new UnsupportedTypeException(type);
         }
 
         private async Task<Parent> GetParentAsync(Guid id, CancellationToken token = default)
         {
-            if (!await AnyParentAsync(p => p.Id.Equals(id), token))
-                throw new DocumentNotFoundException(typeof(Parent), id);
             return await _parentRepository.GetAsync(id, token);
         }
 
         private async Task<Child> GetChildAsync(Guid id, CancellationToken token = default)
         {
-            if (!await AnyChildAsync(p => p.Id.Equals(id), token))
-                throw new DocumentNotFoundException(typeof(Child), id);
             return await _childRepository.GetAsync(id, token);
         }
 
         private async Task<Event> GetEventAsync(Guid id, CancellationToken token = default)
         {
-            if (!await AnyEventAsync(p => p.Id.Equals(id), token))
-                throw new DocumentNotFoundException(typeof(Event), id);
             return await _eventRepository.GetAsync(id, token);
         }
 
@@ -221,22 +227,16 @@ namespace Bubbio.Repository.MongoDb
 
         private async Task<Parent> GetParentAsync(Parent parent, CancellationToken token = default)
         {
-            if (!await AnyParentAsync(p => p.Id.Equals(parent.Id), token))
-                throw new DocumentNotFoundException(parent);
             return await _parentRepository.GetAsync(parent, token);
         }
 
         private async Task<Child> GetChildAsync(Child child, CancellationToken token = default)
         {
-            if (!await AnyChildAsync(p => p.Id.Equals(child.Id), token))
-                throw new DocumentNotFoundException(child);
             return await _childRepository.GetAsync(child, token);
         }
 
         public async Task<Event> GetEventAsync(Event @event, CancellationToken token = default)
         {
-            if (!await AnyEventAsync(p => p.Id.Equals(@event.Id), token))
-                throw new DocumentNotFoundException(@event);
             return await _eventRepository.GetAsync(@event, token);
         }
 
@@ -250,13 +250,13 @@ namespace Bubbio.Repository.MongoDb
         {
             var type = typeof(TDocument);
 
-            if (type == typeof(Parent))
+            if (type.IsATypeOf(typeof(Parent)))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Parent>.Transform(predicate);
                 return await GetParentAsync(filter, token);
             }
 
-            if (type == typeof(Child))
+            if (type.IsATypeOf(typeof(Child)))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Child>.Transform(predicate);
                 return await GetChildAsync(filter, token);
@@ -272,24 +272,18 @@ namespace Bubbio.Repository.MongoDb
         private async Task<Parent> GetParentAsync(Expression<Func<Parent, bool>> predicate,
             CancellationToken token = default)
         {
-            if (!await AnyParentAsync(predicate, token))
-                throw new DocumentNotFoundException(typeof(Parent));
             return await _parentRepository.GetAsync(predicate, token);
         }
 
         private async Task<Child> GetChildAsync(Expression<Func<Child, bool>> predicate,
             CancellationToken token = default)
         {
-            if (!await AnyChildAsync(predicate, token))
-                throw new DocumentNotFoundException(typeof(Child));
             return await _childRepository.GetAsync(predicate, token);
         }
 
         private async Task<Event> GetEventAsync(Expression<Func<Event, bool>> predicate,
             CancellationToken token = default)
         {
-            if (!await AnyEventAsync(predicate, token))
-                throw new DocumentNotFoundException(typeof(Event));
             return await _eventRepository.GetAsync(predicate, token);
         }
 
@@ -304,13 +298,13 @@ namespace Bubbio.Repository.MongoDb
         {
             var type = typeof(TDocument);
 
-            if (type == typeof(Parent))
+            if (type.IsATypeOf(typeof(Parent)))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Parent>.Transform(predicate);
                 return await GetParentsAsync(filter, token);
             }
 
-            if (type == typeof(Child))
+            if (type.IsATypeOf(typeof(Child)))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Child>.Transform(predicate);
                 return await GetChildrenAsync(filter, token);
@@ -326,24 +320,18 @@ namespace Bubbio.Repository.MongoDb
         private async Task<IEnumerable<Parent>> GetParentsAsync(Expression<Func<Parent, bool>> predicate,
             CancellationToken token = default)
         {
-            if (!await AnyParentAsync(predicate, token))
-                throw new DocumentNotFoundException(typeof(Parent));
             return await _parentRepository.GetManyAsync(predicate, token);
         }
 
         private async Task<IEnumerable<Child>> GetChildrenAsync(Expression<Func<Child, bool>> predicate,
             CancellationToken token = default)
         {
-            if (!await AnyChildAsync(predicate, token))
-                throw new DocumentNotFoundException(typeof(Child));
             return await _childRepository.GetManyAsync(predicate, token);
         }
 
         private async Task<IEnumerable<Event>> GetEventsAsync(Expression<Func<Event, bool>> predicate,
             CancellationToken token = default)
         {
-            if (!await AnyEventAsync(predicate, token))
-                throw new DocumentNotFoundException(typeof(Event));
             return await _eventRepository.GetManyAsync(predicate, token);
         }
 
@@ -357,13 +345,13 @@ namespace Bubbio.Repository.MongoDb
         {
             var type = typeof(TDocument);
 
-            if (type == typeof(Parent))
+            if (type.IsATypeOf(typeof(Parent)))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Parent>.Transform(predicate);
                 return await GetParentsAsync(filter, skip, take, token);
             }
 
-            if (type == typeof(Child))
+            if (type.IsATypeOf(typeof(Child)))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Child>.Transform(predicate);
                 return await GetChildrenAsync(filter, skip, take, token);
@@ -379,24 +367,18 @@ namespace Bubbio.Repository.MongoDb
         private async Task<IEnumerable<Parent>> GetParentsAsync(Expression<Func<Parent, bool>> predicate, int skip = 0,
             int take = 50, CancellationToken token = default)
         {
-            if (!await AnyParentAsync(predicate, token))
-                throw new DocumentNotFoundException(typeof(Parent));
             return await _parentRepository.GetManyAsync(predicate, skip, take, token);
         }
 
         private async Task<IEnumerable<Child>> GetChildrenAsync(Expression<Func<Child, bool>> predicate, int skip = 0,
             int take = 50, CancellationToken token = default)
         {
-            if (!await AnyChildAsync(predicate, token))
-                throw new DocumentNotFoundException(typeof(Child));
             return await _childRepository.GetManyAsync(predicate, skip, take, token);
         }
 
         private async Task<IEnumerable<Event>> GetEventsAsync(Expression<Func<Event, bool>> predicate, int skip = 0,
             int take = 50, CancellationToken token = default)
         {
-            if (!await AnyEventAsync(predicate, token))
-                throw new DocumentNotFoundException(typeof(Parent));
             return await _eventRepository.GetManyAsync(predicate, skip, take, token);
         }
 
@@ -409,11 +391,11 @@ namespace Bubbio.Repository.MongoDb
         {
             var type = typeof(TDocument);
 
-            if (type == typeof(Parent))
+            if (type.IsATypeOf(typeof(Parent)))
                 return await CountParentsAsync(token);
-            if (type == typeof(Child))
+            if (type.IsATypeOf(typeof(Child)))
                 return await CountChildrenAsync(token);
-            if (type == typeof(Event))
+            if (type.IsATypeOf(typeof(Event)))
                 return await CountEventsAsync(token);
 
             throw new UnsupportedTypeException(type);
@@ -444,13 +426,13 @@ namespace Bubbio.Repository.MongoDb
         {
             var type = typeof(TDocument);
 
-            if (type == typeof(Parent))
+            if (type.IsATypeOf(typeof(Parent)))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Parent>.Transform(predicate);
                 return await CountParentsAsync(filter, token);
             }
 
-            if (type == typeof(Child))
+            if (type.IsATypeOf(typeof(Child)))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Child>.Transform(predicate);
                 return await CountChildrenAsync(filter, token);
@@ -493,14 +475,14 @@ namespace Bubbio.Repository.MongoDb
         {
             var type = typeof(TDocument);
 
-            if (type == typeof(Parent))
+            if (type.IsATypeOf(typeof(Parent)))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Parent>.Transform(predicate);
                 var proj = ExpressionHelper<IDocument<Guid>, Parent>.Transform(projection);
                 return await ProjectParentAsync(filter, proj, token);
             }
 
-            if (type == typeof(Child))
+            if (type.IsATypeOf(typeof(Child)))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Child>.Transform(predicate);
                 var proj = ExpressionHelper<IDocument<Guid>, Child>.Transform(projection);
@@ -519,8 +501,6 @@ namespace Bubbio.Repository.MongoDb
             Expression<Func<Parent, TProjection>> projection, CancellationToken token = default)
             where TProjection : class
         {
-            if (!await AnyParentAsync(predicate, token))
-                throw new DocumentNotFoundException(typeof(Parent));
             return await _parentRepository.ProjectAsync(predicate, projection, token);
         }
 
@@ -528,8 +508,6 @@ namespace Bubbio.Repository.MongoDb
             Expression<Func<Child, TProjection>> projection, CancellationToken token = default)
             where TProjection : class
         {
-            if (!await AnyChildAsync(predicate, token))
-                throw new DocumentNotFoundException(typeof(Child));
             return await _childRepository.ProjectAsync(predicate, projection, token);
         }
 
@@ -537,8 +515,6 @@ namespace Bubbio.Repository.MongoDb
             Expression<Func<Event, TProjection>> projection, CancellationToken token = default)
             where TProjection : class
         {
-            if (!await AnyEventAsync(predicate, token))
-                throw new DocumentNotFoundException(typeof(Event));
             return await _eventRepository.ProjectAsync(predicate, projection, token);
         }
 
@@ -554,14 +530,14 @@ namespace Bubbio.Repository.MongoDb
         {
             var type = typeof(TDocument);
 
-            if (type == typeof(Parent))
+            if (type.IsATypeOf(typeof(Parent)))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Parent>.Transform(predicate);
                 var proj = ExpressionHelper<IDocument<Guid>, Parent>.Transform(projection);
                 return await ProjectParentsAsync(filter, proj, token);
             }
 
-            if (type == typeof(Child))
+            if (type.IsATypeOf(typeof(Child)))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Child>.Transform(predicate);
                 var proj = ExpressionHelper<IDocument<Guid>, Child>.Transform(projection);
@@ -581,8 +557,6 @@ namespace Bubbio.Repository.MongoDb
             CancellationToken token = default)
             where TProjection : class
         {
-            if (!await AnyParentAsync(predicate, token))
-                throw new DocumentNotFoundException(typeof(Parent));
             return await _parentRepository.ProjectManyAsync(predicate, projection, token);
         }
 
@@ -591,8 +565,6 @@ namespace Bubbio.Repository.MongoDb
             CancellationToken token = default)
             where TProjection : class
         {
-            if (!await AnyChildAsync(predicate, token))
-                throw new DocumentNotFoundException(typeof(Child));
             return await _childRepository.ProjectManyAsync(predicate, projection, token);
         }
 
@@ -601,8 +573,6 @@ namespace Bubbio.Repository.MongoDb
             CancellationToken token = default)
             where TProjection : class
         {
-            if (!await AnyEventAsync(predicate, token))
-                throw new DocumentNotFoundException(typeof(Child));
             return await _eventRepository.ProjectManyAsync(predicate, projection, token);
         }
 
@@ -695,14 +665,14 @@ namespace Bubbio.Repository.MongoDb
         {
             var type = typeof(TDocument);
 
-            if (type == typeof(Parent))
+            if (type.IsATypeOf(typeof(Parent)))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Parent>.Transform(predicate);
                 var select = ExpressionHelper<IDocument<Guid>, Parent>.Transform(selector);
                 return await UpdateParentAsync(filter, select, value, token);
             }
 
-            if (type == typeof(Child))
+            if (type.IsATypeOf(typeof(Child)))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Child>.Transform(predicate);
                 var select = ExpressionHelper<IDocument<Guid>, Child>.Transform(selector);
@@ -749,11 +719,11 @@ namespace Bubbio.Repository.MongoDb
         {
             var type = typeof(TDocument);
 
-            if (type == typeof(Parent))
+            if (type.IsATypeOf(typeof(Parent)))
                 return await DeleteParentAsync(id, cascade, token);
-            if (type == typeof(Child))
+            if (type.IsATypeOf(typeof(Child)))
                 return await DeleteChildAsync(id, cascade, token);
-            if (type == typeof(Event))
+            if (type.IsATypeOf(typeof(Event)))
                 return await DeleteEventAsync(id, token);
 
             throw new UnsupportedTypeException(type);
@@ -891,19 +861,19 @@ namespace Bubbio.Repository.MongoDb
         {
             var type = typeof(TDocument);
 
-            if (typeof(Parent).IsAssignableFrom(type))
+            if (type.IsATypeOf(typeof(Parent)))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Parent>.Transform(predicate);
                 return await DeleteManyParentsAsync(filter, cascade, token);
             }
 
-            if (typeof(Child).IsAssignableFrom(type))
+            if (type.IsATypeOf(typeof(Child)))
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Child>.Transform(predicate);
                 return await DeleteManyChildrenAsync(filter, cascade, token);
             }
 
-            if (!typeof(Event).IsAssignableFrom(type)) throw new UnsupportedTypeException(type);
+            if (!type.IsATypeOf(typeof(Event))) throw new UnsupportedTypeException(type);
             {
                 var filter = ExpressionHelper<IDocument<Guid>, Event>.Transform(predicate);
                 return await DeleteManyEventsAsync(filter, token);
@@ -942,10 +912,10 @@ namespace Bubbio.Repository.MongoDb
 
         #region ValidateTransition
 
-        private async Task ValidateTransitionAsync(IEvent @event, CancellationToken token = default)
+        private async Task<bool> IsValidTransitionAsync(IEvent @event, CancellationToken token = default)
         {
             if (!(@event is ITransitionEvent current))
-                return;
+                return true;
 
             var previous = (ITransitionEvent) await _eventRepository
                 .GetLastAsync(
@@ -954,11 +924,10 @@ namespace Bubbio.Repository.MongoDb
                     e => e.Timestamp,
                     token);
 
-            if (!_transitionValidator.IsValid(previous, current))
-                throw new InvalidTransitionEventException(EventType.Sleep, current.Id, current.Transition);
+            return _transitionValidator.IsValid(previous, current);
         }
 
-        private async Task ValidateTransitionsAsync(IEnumerable<IEvent> events, CancellationToken token = default)
+        private async Task<bool> IsValidTransitionsAsync(IEnumerable<IEvent> events, CancellationToken token = default)
         {
             var sleepsToSave = events
                 .Where(e => e.EventType.Equals(EventType.Sleep))
@@ -967,7 +936,9 @@ namespace Bubbio.Repository.MongoDb
                 .ToList();
 
             if (!sleepsToSave.Any())
-                return;
+                return true;
+
+            var isValid = true;
 
             foreach (var group in sleepsToSave)
             {
@@ -987,44 +958,56 @@ namespace Bubbio.Repository.MongoDb
                 {
                     var current = (ITransitionEvent) @event;
                     if (!_transitionValidator.IsValid(previous, current))
-                        throw new InvalidTransitionEventException(EventType.Sleep, current.Id, current.Transition);
+                    {
+                        isValid = false;
+                        break;
+                    }
                     previous = current;
                 }
+
+                if (!isValid)
+                    break;
             }
+
+            return isValid;
         }
 
         #endregion
 
-        #region ValidateForeignId
+        #region LinkedDocumentExists
 
-        private async Task ValidateForeignIdAsync<TPrimary, TForeign>(Guid id, CancellationToken token = default)
+        private async Task<bool> LinkedDocumentExistsAsync<TLink>(Guid id, CancellationToken token = default)
         {
             if (id.IsEmpty())
-                throw new InvalidForeignIdException(typeof(TPrimary), typeof(TForeign));
+                return false;
 
-            if (typeof(TForeign) == typeof(Parent))
-                if (!await _parentRepository.AnyAsync(p => p.Id.Equals(id), token))
-                    throw new InvalidForeignIdException(typeof(TPrimary), typeof(TForeign), id);
+            var type = typeof(TLink);
 
-            if (typeof(TForeign) == typeof(Child))
-                if (!await _childRepository.AnyAsync(c => c.Id.Equals(id), token))
-                    throw new InvalidForeignIdException(typeof(TPrimary), typeof(TForeign), id);
+            if (type.IsATypeOf(typeof(Parent)))
+                if (await _parentRepository.AnyAsync(p => p.Id.Equals(id), token))
+                    return true;
+
+            if (!type.IsATypeOf(typeof(Child)))
+                return false;
+
+            return await _childRepository.AnyAsync(c => c.Id.Equals(id), token);
         }
 
-        private void ValidateForeignId<TPrimary, TForeign>(Guid id, CancellationToken token = default)
+        private bool LinkedDocumentExists<TLink>(Guid id, CancellationToken token = default)
         {
             if (id.IsEmpty())
-                throw new InvalidForeignIdException(typeof(TPrimary), typeof(TForeign));
+                return false;
 
-            if (typeof(TForeign) == typeof(Parent))
-                if (!_parentRepository.AnyAsync(p => p.Id.Equals(id), token).Result)
-                    throw new InvalidForeignIdException(typeof(TPrimary), typeof(TForeign), id);
+            var type = typeof(TLink);
 
-            if (typeof(TForeign) != typeof(Child))
-                return;
+            if (type.IsATypeOf(typeof(Parent)))
+                if (_parentRepository.AnyAsync(p => p.Id.Equals(id), token).Result)
+                    return true;
 
-            if (!_childRepository.AnyAsync(c => c.Id.Equals(id), token).Result)
-                throw new InvalidForeignIdException(typeof(TPrimary), typeof(TForeign), id);
+            if (!type.IsATypeOf(typeof(Child)))
+                return false;
+
+            return _childRepository.AnyAsync(c => c.Id.Equals(id), token).Result;
         }
 
         #endregion

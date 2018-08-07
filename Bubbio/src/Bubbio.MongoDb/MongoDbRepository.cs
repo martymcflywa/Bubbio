@@ -55,9 +55,16 @@ namespace Bubbio.MongoDb
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            return await GetCollection<TDocument, TKey>(partitionKey)
-                .Find(doc => doc.Id.Equals(id))
-                .SingleAsync(token);
+            try
+            {
+                return await GetCollection<TDocument, TKey>(partitionKey)
+                    .Find(doc => doc.Id.Equals(id))
+                    .SingleOrDefaultAsync(token);
+            }
+            catch (InvalidOperationException)
+            {
+                return default;
+            }
         }
 
         /// <inheritdoc />
@@ -68,9 +75,16 @@ namespace Bubbio.MongoDb
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            return await GetCollection<TDocument, TKey>(partitionKey)
-                .Find(filter)
-                .SingleAsync(token);
+            try
+            {
+                return await GetCollection<TDocument, TKey>(partitionKey)
+                    .Find(filter)
+                    .SingleOrDefaultAsync(token);
+            }
+            catch (InvalidOperationException)
+            {
+                return default;
+            }
         }
 
         /// <inheritdoc />
@@ -161,10 +175,17 @@ namespace Bubbio.MongoDb
             where TKey : IEquatable<TKey>
             where TProject : class
         {
-            return await GetCollection<TDocument, TKey>(partitionKey)
-                .Find(filter)
-                .Project(projection)
-                .SingleAsync(token);
+            try
+            {
+                return await GetCollection<TDocument, TKey>(partitionKey)
+                    .Find(filter)
+                    .Project(projection)
+                    .SingleOrDefaultAsync(token);
+            }
+            catch (InvalidOperationException)
+            {
+                return default;
+            }
         }
 
         /// <inheritdoc />
@@ -271,7 +292,7 @@ namespace Bubbio.MongoDb
             where TKey : IEquatable<TKey>
         {
             if (await CountAsync<TDocument, TKey>(filter, partitionKey, token) > 1)
-                throw new InvalidOperationException("Sequence contains more than one element");
+                return false;
 
             var task = Builders<TDocument>
                 .Update
@@ -325,12 +346,12 @@ namespace Bubbio.MongoDb
             where TDocument : IDocument<TKey>
             where TKey : IEquatable<TKey>
         {
-            var enumerable = documents.ToList();
-            if (!enumerable.Any())
+            var list = documents.ToList();
+            if (!list.Any())
                 return 0;
 
-            var idsToDelete = enumerable.Select(d => d.Id).ToList();
-            return (await GetCollection<TDocument, TKey>(enumerable.FirstOrDefault(), partitionKey)
+            var idsToDelete = list.Select(d => d.Id).ToList();
+            return (await GetCollection<TDocument, TKey>(list.FirstOrDefault(), partitionKey)
                     .DeleteManyAsync(d => idsToDelete.Contains(d.Id), token))
                 .DeletedCount;
         }
